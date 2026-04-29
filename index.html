@@ -3,392 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>조민영's Design Portfolio</title>
-   <link rel="manifest" href="manifest.json">
-
+    <title>DDMAM Portfolio | Archive</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link href="https://fonts.googleapis.com/css3?family=Noto+Serif+KR:wght@300;600&family=Pretendard:wght@300;500&display=swap" rel="stylesheet">
     
-    <link rel="icon" type="image/png" href="icons/icon.png">
-    
-    <link rel="apple-touch-icon" href="icons/icon.png">
-    
-    <link rel="icon" type="image/png" sizes="128*128" href="icons/icon.png">
-    
-  
-
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
     <style>
-        /* [Global Style] */
         :root {
-            --bg-color: #ffffff;
-            --text-main: #111111;
-            --text-sub: #555555;
-            --accent: #2c5bf0; /* 기본 포인트 컬러 (파랑) */
-            --box-bg: #eeeeee; /* 이미지가 없을 때 보이는 회색 배경 */
-        }
-        body {
-            font-family: "Pretendard", -apple-system, sans-serif;
-            margin: 0; padding: 0;
-            color: var(--text-main); background-color: var(--bg-color);
-            line-height: 1.6; word-break: keep-all;
-        }
-        a { text-decoration: none; color: inherit; }
-        
-        /* [Navigation] */
-        nav {
-            position: sticky; top: 0;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            padding: 20px 40px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #eee; z-index: 100;
-        }
-        .logo { font-weight: 800; font-size: 1.5rem; }
-        .menu { display: flex; gap: 30px; }
-        .menu a { font-size: 0.95rem; font-weight: 600; color: #888; transition: 0.3s; }
-        .menu a:hover { color: var(--text-main); }
-
-        /* [Layout Common] */
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        section { padding: 100px 0; }
-        .section-title {
-            font-size: 2rem; font-weight: 700; margin-bottom: 10px;
-            border-left: 5px solid var(--accent); padding-left: 15px;
-        }
-        .section-desc { color: var(--text-sub); margin-bottom: 50px; margin-left: 20px; }
-
-        /* [1. Hero Section] 메인 작품 강조 */
-        .hero { padding: 60px 0 100px; text-align: center; }
-        .hero-text { margin-bottom: 40px; }
-        .hero-text h1 { font-size: 3.5rem; margin-bottom: 15px; line-height: 1.2; }
-        .hero-text p { font-size: 1.2rem; color: var(--text-sub); }
-        
-        /* 메인 작품 박스 (스타일 직접 수정 가능) */
-        .best-work {
-            width: 100%;
-            /* 배경색은 아래 HTML 태그에서 style로 직접 지정합니다 */
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 40px 20px;
-            box-sizing: border-box;
-        }
-        .best-work img {
-            max-width: 100%; max-height: 500px; /* 너무 커지지 않게 제한 */
-            object-fit: contain; margin-bottom: 20px;
-            border-radius: 12px;
-        }
-        .badge {
-            position: absolute; top: 30px; right: 30px;
-            background: #fff; color: #000;
-            padding: 8px 18px; border-radius: 30px; font-weight: 800;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-        }
-        /* Hero 내부 설명 텍스트 */
-        .hero-desc-box {
-            text-align: center; max-width: 700px; color: #fff;
-        }
-        .hero-desc-box h2 { font-size: 1.8rem; margin: 0 0 10px 0; }
-        .hero-desc-box p { font-size: 1.1rem; opacity: 0.9; font-weight: 300; }
-
-        /* [Grid System] 카드형 리스트 */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 40px;
-        }
-        .card {
-            background: #fff; border-radius: 16px; overflow: hidden;
-            transition: transform 0.3s ease;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;
-        }
-        .card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
-        
-        .card-img {
-            width: 100%; height: 320px;
-            background-color: var(--box-bg); /* 빈 공간 회색 처리 */
-            display: flex; align-items: center; justify-content: center;
-        }
-        .card-img img {
-            max-width: 100%; max-height: 100%;
-            object-fit: contain; /* ★ 이미지 잘림 방지 */
-        }
-        
-        .card-info { padding: 25px; }
-        .card-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 10px; color: #222; }
-        
-        /* ★ 추가된 설명 텍스트 스타일 */
-        .card-desc {
-            font-size: 0.95rem; color: #666; margin-bottom: 15px;
-            line-height: 1.5; min-height: 3em; /* 줄맞춤을 위해 높이 확보 */
-        }
-        
-        .card-role {
-            font-size: 0.85rem; color: #999; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.5px;
-            border-top: 1px solid #eee; padding-top: 15px; display: block;
+            --bg-light: #fdfdfb;
+            --point-color: #1d3557;
+            --accent-color: #a8dadc;
+            --text-main: #333;
+            --gray-light: #f1f3f5;
         }
 
-        /* [About Section] */
-        #about { background-color: #fff; border-top: 1px solid #eee; }
-        .about-wrap { display: flex; gap: 50px; flex-wrap: wrap; }
-        .about-text { flex: 1; min-width: 300px; }
-        .about-skills { 
-            flex: 1; min-width: 300px; background: #f8f9fa; 
-            padding: 40px; border-radius: 20px; 
+        body { margin: 0; font-family: 'Pretendard', sans-serif; background-color: var(--bg-light); color: var(--text-main); line-height: 1.6; }
+
+        /* 네비게이션 */
+        .btns { position: fixed; top: 0; width: 100%; z-index: 100; background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); border-bottom: 1px solid #eee; }
+        .btns__menu { display: flex; justify-content: center; padding: 18px; }
+        .btns__menu .btn { font-size: 14px; font-weight: 600; color: var(--point-color); background: none; border: none; margin: 0 20px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .btns__menu .btn:hover { color: var(--accent-color); }
+        .btn.contact { border: 1px solid var(--point-color); border-radius: 20px; padding: 5px 15px; }
+
+        /* 공통 레이아웃 */
+        section { width: 100%; min-height: 100vh; padding: 120px 20px; box-sizing: border-box; display: flex; align-items: center; }
+        .wrapper { max-width: 1100px; margin: auto; width: 100%; }
+        h1 { font-family: 'Noto Serif KR', serif; font-size: 48px; margin-bottom: 20px; color: var(--point-color); }
+        .lorem { color: #666; font-size: 17px; max-width: 800px; margin: 0 auto 40px; }
+
+        /* 이미지 박스 공통 */
+        .img-box { 
+            background-color: #e9ecef; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            background-size: cover; 
+            background-position: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .skill-list li { margin-bottom: 10px; font-size: 1rem; }
-        
-        /* [Footer] */
-        footer { background: #111; color: #fff; padding: 80px 0; text-align: center; }
-        .contact-info p { margin: 5px 0; color: #888; }
+
+        .home-main-img { width: 100%; height: 550px; margin-top: 40px; }
+        .about-img { width: 400px; height: 500px; flex-shrink: 0; }
+        .work-img { width: 100%; height: 280px; margin-bottom: 20px; }
+
+        #home { background: var(--gray-light); text-align: center; }
+        #about { background: #fff; }
+        .about-content { display: flex; gap: 60px; align-items: center; text-align: left; }
+
+      /* Skills 섹션 그리드 설정 */
+#skills { 
+    background: var(--gray-light); 
+    text-align: center; 
+    padding: 100px 20px; 
+}
+
+.skills-grid { 
+    display: flex;             /* 가로 정렬을 위해 flex 사용 */
+    justify-content: center;   /* 중앙 정렬 */
+    gap: 20px;                 /* 박스 사이 간격 */
+    margin-top: 40px;
+    max-width: 1200px;         /* 전체 너비 제한 */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.skill-item { 
+    flex: 1;                   /* 3개의 박스가 동일한 너비를 가짐 */
+    height: 300px;             /* 가로로 넓어지므로 높이를 적절히 조절 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 15px; 
+    position: relative; 
+    overflow: hidden;
+    color: white; 
+    transition: 0.4s;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+}
+
+/* 마우스 올렸을 때 효과 */
+.skill-item:hover { 
+    transform: translateY(-10px); 
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2); 
+}
+
+/* 이미지 위 텍스트 가독성을 위한 어두운 오버레이 */
+.skill-item::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.45); 
+    z-index: 1;
+}
+
+.skill-item h3, .skill-item p {
+    position: relative;
+    z-index: 2;
+    margin: 5px 0;
+}
+        /* Works 섹션 강화 */
+        #works { background: #fff; text-align: center; }
+        .works-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .work-card { text-align: left; transition: 0.3s; }
+        .work-card:hover { transform: translateY(-10px); }
+        .work-card h4 { margin: 10px 0 5px; font-size: 20px; color: var(--point-color); }
+
+        #contact { background: var(--point-color); color: #fff; text-align: center; padding: 150px 20px; }
+        #contact h1 { color: #fff; }
+        .email-link { font-size: 32px; color: var(--accent-color); text-decoration: none; font-weight: 300; border-bottom: 1px solid var(--accent-color); }
+
+        .arrow-up { position: fixed; bottom: 40px; right: 40px; width: 60px; height: 60px; background-color: var(--point-color); color: white; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; cursor: pointer; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .arrow-up.show { opacity: 1; pointer-events: auto; }
+        .arrow-up span { font-size: 35px; }
     </style>
 </head>
 <body>
 
-    <nav>
-        <div class="logo">PORTFOLIO</div>
-        <div class="menu">
-            <a href="#branding">Branding</a>
-            <a href="#uiux">UI/UX</a>
-            <a href="#graphic">Graphic</a>
-            <a href="#artwork">Artwork</a> 
-            <a href="#about">About Me</a>
+    <button class="arrow-up"><span class="material-symbols-outlined">arrow_upward</span></button>
+
+    <nav class="btns">
+        <div class="btns__menu">
+            <button class="btn" data-link="#home">Home</button>
+            <button class="btn" data-link="#about">About Me</button>
+            <button class="btn" data-link="#skills">Skills</button>
+            <button class="btn" data-link="#works">Works</button>
+            <button class="btn contact" data-link="#contact">Contact Me</button>
         </div>
     </nav>
 
-    <section class="hero container">
-        <div class="hero-text">
-            <h1>Create Value<br>Through Design</h1>
-            <p>문제를 해결하는 비주얼 디자이너, 조민영입니다.</p>
-        </div>
-        
-        <div class="best-work" style="background-color: #f8df8e;">
-            <div class="badge">BEST WORK</div>
-            
-            <img src="images/song_main2.jpg" alt="노래한장 메인">
-            
-           <div class="hero-desc-box" style="color: #222222; text-shadow: none;">
-    
-    <h2 style="color: #000000; margin-bottom: 10px;">노래한장: 시니어를 위한 UX</h2>
-    
-    <p style="font-weight: 500;"> "글자가 작아 불편하다"는 어르신들의 목소리를 담았습니다.<br>
-        wcag 기준(국제표준규칙)을 준수한 고대비 컬러와 1.5배 커진 터치 영역으로<br>
-        디지털 소외 계층을 위한 직관적인 인터페이스를 설계했습니다.
-    </p>
-</div>
+    <section id="home">
+        <div class="wrapper">
+            <h1>DDMAM ARCHIVE</h1>
+            <p class="lorem">시대를 아우르는 사유, 기록으로 남는 지적인 사치<br><span style="font-size: 15px; opacity: 0.8;">단순한 소비를 넘어 삶의 궤적을 수집하는 DDMAM의 공간입니다.</span></p>
+            <div class="img-box home-main-img" style="background-image: url('https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1200');"></div>
         </div>
     </section>
 
-    <section id="branding" class="container">
-        <h2 class="section-title">Branding & Identity</h2>
-        <p class="section-desc">브랜드의 본질을 시각 언어로 정의합니다.</p>
-        
-        <div class="grid">
-            <div class="card">
-                <div class="card-img">
-                    <img src="images/ikea.jpg" alt="IKEA">
-                </div>
-                <div class="card-info">
-                    <div class="card-title">IKEA Logo Redesign</div>
-                    <p class="card-desc">
-                        기존의 획일화된디자인을 수정해, 현대적으로 단순함을 
-                        형상화하여 미니멀한 라인 아이콘으로 재해석했습니다.
+    <section id="about">
+        <div class="wrapper">
+            <div class="about-content">
+                <div class="img-box about-img" style="background-image: url('전문가여성사진.jpg');"></div>
+                <div>
+                    <h1>About Me</h1>
+                    <p style="text-align: left; line-height: 1.8; color: #444; margin: 0;">
+                        <strong>삶의 궤적을 기록하는 아카이빙 디자이너, DDMAM입니다.</strong><br><br>
+                        행정학과 부동산, 복지 현장에서 쌓은 풍부한 삶의 경험을 바탕으로 이제는 시각디자인이라는 새로운 도구로 세상을 봅니다.<br><br>
+                        현재 한국폴리텍대학에서 UI/UX와 영상 디자인을 전공하며, 시니어 세대를 위한 '지적 사치'가 담긴 디지털 아카이빙 콘텐츠를 제작하고 있습니다.
                     </p>
-                    <span class="card-role">Logo Renewal • Concept Board</span>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-img">
-                    <img src="images/melon.jpg" alt="Lighthouse">
-                </div>
-                <div class="card-info">
-                    <div class="card-title">LightHouse Identity</div>
-                    <p class="card-desc">
-                        어둠을 밝히는 등대의 빛을 모티브로,<br>
-                        신뢰감을 주는 블루 컬러와 기하학적 심볼을 사용했습니다.
-                    </p>
-                    <span class="card-role">Symbol Logo Design</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="uiux" style="background-color: #f9f9f9;">
-        <div class="container">
-            <h2 class="section-title">UI/UX Design</h2>
-            <p class="section-desc">사용자 경험을 고려한 모바일 인터페이스입니다.</p>
+   <section id="skills">
+    <div class="wrapper">
+        <h1>Design Skills</h1>
+        <p class="lorem">전문적인 도구들을 활용하여 아이디어를 시각화합니다.</p>
+        <div class="skills-grid">
+            <div class="skill-item" style="background-image: url('https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&q=80&w=600');">
+                <h3>UI/UX Design</h3>
+                <p>Figma, Adobe XD</p>
+            </div>
+            
+            <div class="skill-item" style="background-image: url('https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&q=80&w=600');">
+                <h3>Video Edit</h3>
+                <p>Premiere Pro, After Effects</p>
+            </div>
+            
+            <div class="skill-item" style="background-image: url('https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&q=80&w=600');">
+                <h3>Branding</h3>
+                <p>Illustrator, Photoshop</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-            <div class="grid">
-                <div class="card">
-                    <div class="card-img">
-                        <img src="images/song_main1.jpg" alt="노래한장 상세">
-                    </div>
-                    <div class="card-info">
-                        <div class="card-title">노래한장 (Singing Sheet)</div>
-                        <p class="card-desc">
-                            시니어 타겟의 노래방 앱입니다. 음성 검색과 단순한 메뉴단계로
-                            진입 장벽을 낮추는 데 집중했습니다.
-                        </p>
-                        <span class="card-role">Senior Target App • Team Project</span>
-                    </div>
+    <section id="works">
+        <div class="wrapper">
+            <h1>Selected Works</h1>
+            <p class="lorem">기록의 가치를 담은 프로젝트들을 소개합니다.</p>
+            <div class="works-grid">
+                <div class="work-card">
+                    <div class="img-box work-img" style="background-image: url('https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&q=80&w=600');"></div>
+                    <h4>Starbucks Redesign</h4>
+                    <p style="font-size: 14px; color: #888; margin: 0;">액티브 시니어를 위한 매거진 스타일 UI/UX</p>
                 </div>
-                
-                <div class="card">
-                    <div class="card-img">
-                        <img src="images/song_main.jpeg" alt="목업">
-                    </div>
-                    <div class="card-info">
-                        <div class="card-title">Mobile App Mockups</div>
-                        <p class="card-desc">
-                            다양한 디바이스 환경에서의 반응형 UI를 고려하여
-                            제작한 고해상도 목업(Mockup) 시리즈입니다.
-                        </p>
-                        <span class="card-role">GUI Design • Prototyping</span>
-                    </div>
+                <div class="work-card">
+                    <div class="img-box work-img" style="background-image: url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&q=80&w=600');"></div>
+                    <h4>Golden Singers</h4>
+                    <p style="font-size: 14px; color: #888; margin: 0;">시니어 노래 커뮤니티 비영리 법인 CI 설계</p>
+                </div>
+                <div class="work-card">
+                    <div class="img-box work-img" style="background-image: url('https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=600');"></div>
+                    <h4>Visualizer Content</h4>
+                    <p style="font-size: 14px; color: #888; margin: 0;">유튜브 DDMAM 채널 감성 비주얼라이징</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="graphic" class="container">
-        <h2 class="section-title">Graphic & Poster</h2>
-        <p class="section-desc">강렬한 메시지를 전달하는 편집/포스터 디자인입니다.</p>
-
-        <div class="grid">
-            <div class="card">
-                <div class="card-img" style="height: 500px;"> <img src="images/good_title.jpg" alt="버스킹">
-                </div>
-                <div class="card-info">
-                    <div class="card-title">굿데이 음악회</div>
-                    <p class="card-desc">
-                        음악의 리듬감을 타이포그래피의 배치로 시각화하고,
-                        따뜻한 일러스트로 감성적인 분위기를 연출했습니다.
-                    </p>
-                    <span class="card-role">Event Poster Design</span>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-img" style="height: 500px;">
-                    <img src="images/meta_ui.jpg" alt="K-Discovery">
-                </div>
-                <div class="card-info">
-                    <div class="card-title">K-Discovery</div>
-                    <p class="card-desc">
-                        한국의 전통 문양을 현대적인 그래픽 요소로 재해석하여
-                        글로벌 관광객들에게 어필하는 홍보물입니다.
-                    </p>
-                    <span class="card-role">Promotional Graphic</span>
-                </div>
-            </div>
-            
-             <div class="card">
-                <div class="card-img" style="height: 500px;">
-                    <img src="images/cat.jpg" alt="리플릿">
-                </div>
-                <div class="card-info">
-                    <div class="card-title">3단 리플릿 디자인</div>
-                    <p class="card-desc">
-                        정보의 위계 질서를 명확히 하여, 독자가 내용을
-                        순서대로 쉽게 파악할 수 있도록 그리드를 설계했습니다.
-                    </p>
-                    <span class="card-role">Editorial Design</span>
-                </div>
-            </div>
+    <section id="contact">
+        <div class="wrapper">
+            <h1>Contact Me</h1>
+            <p style="margin-bottom: 40px; opacity: 0.8;">새로운 프로젝트 제안이나 협업 문의는 언제든 환영합니다.</p>
+            <a href="mailto:your-email@gmail.com" class="email-link">jominyeongg@gmail.com</a>
         </div>
     </section>
 
-  <section id="artwork" class="container" style="background-color: #fff;">
-        <h2 class="section-title">Artwork</h2>
-        <p class="section-desc">포토샵을 활용한 그래픽 아트워크입니다.</p>
-        
-        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
-            
-            <div class="card">
-                <div class="card-img" style="height:250px;">
-                    <img src="images/flower_elegant.jpg" alt="Art 1">
-                </div>
-                <div class="card-info">
-                    <div class="card-title">Flower Art</div>
-                    <span class="card-role">Photoshop Composite</span>
-                </div>
-            </div>
+    <script>
+        const arrowUp = document.querySelector('.arrow-up');
+        const sections = Array.from(document.querySelectorAll('section'));
+        const navButtons = document.querySelectorAll('.btn');
 
-            <div class="card">
-                <div class="card-img" style="height:250px;">
-                    <img src="images/ski.jpeg" alt="Art 2">
-                </div>
-                <div class="card-info">
-                    <div class="card-title">Ski Resort</div>
-                    <span class="card-role">Photo Manipulation</span>
-                </div>
-            </div>
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-link');
+                document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+            });
+        });
 
-            <div class="card">
-                <div class="card-img" style="height:250px;">
-                    <img src="images/pill_main.jpg" alt="Art 3">
-                </div>
-                <div class="card-info">
-                    <div class="card-title">Good Program</div>
-                    <span class="card-role">Creative Retouching</span>
-                </div>
-            </div>
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) arrowUp.classList.add('show');
+            else arrowUp.classList.remove('show');
+        });
 
-            <div class="card">
-                <div class="card-img" style="height:250px;">
-                    <img src="images/Rectangle-1.jpeg " alt="Art 4">
-                </div>
-                <div class="card-info">
-                    <div class="card-title">Poem</div>
-                    <span class="card-role">Graphic Design</span>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <section id="about" class="container">
-        <h2 class="section-title">About Me</h2>
-        <div class="about-wrap">
-            <div class="about-text">
-                <h3 style="font-size: 1.8rem; margin-bottom: 20px; line-height: 1.4;">
-                    "데이터를 이해하는<br>디자이너입니다."
-                </h3>
-                <p style="color: #555; font-size: 1.1rem; margin-bottom: 20px;">
-                    시각 디자인을 전공하며 심미적인 아름다움뿐만 아니라,<br>
-                    <strong>Python을 활용한 데이터 분석</strong>과 논리적인 기획을 더해<br>
-                    설득력 있는 결과물을 만듭니다.
-                </p>
-                <p style="color: #555;">
-                    특히 <strong>사회적 문제(고령화시대 시니어층의 디지털소외등)</strong>를 디자인과 기술로<br>
-                    해결하는 데 깊은 관심을 가지고 있습니다.
-                </p>
-            </div>
-            
-            <div class="about-skills">
-                <h4 style="margin-top: 0; font-size: 1.2rem; margin-bottom: 20px;">Skills & Tools</h4>
-                <ul class="skill-list" style="list-style: none; padding: 0;">
-                    <li>🎨 <strong>Design:</strong> Photoshop, Illustrator, Figma, InDesign</li>
-                    <li>💻 <strong>Code:</strong> Python (Pandas, Streamlit), HTML/CSS</li>
-                    <li>📊 <strong>Data:</strong> 웹 크롤링, 데이터 시각화</li>
-                    <li>💡 <strong>Interest:</strong> 시니어 복지, UX 리서치, 타이포그래피</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <div class="container">
-            <h3 style="margin-bottom: 10px;">Thank you for watching</h3>
-            <div class="contact-info">
-                <p>Email: jominyeongg@gmail.com</p>
-                <p>Phone: 010-6469-2630</p>
-            </div>
-        </div>
-    </footer>
-
+        arrowUp.addEventListener('click', () => {
+            let currentIdx = -1;
+            const scrollPos = window.scrollY + (window.innerHeight / 2);
+            sections.forEach((sec, i) => {
+                if (scrollPos >= sec.offsetTop && scrollPos < sec.offsetTop + sec.offsetHeight) currentIdx = i;
+            });
+            if (currentIdx > 0) sections[currentIdx - 1].scrollIntoView({ behavior: 'smooth' });
+            else window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
 </body>
 </html>
