@@ -115,6 +115,7 @@ header select.bp{border-color:#8fd3ff;color:#8fd3ff}
     <button id="bulkArt" class="blue" style="width:100%">작품 이미지 여러 장 한꺼번에 넣기</button><input id="bulkArtFile" type="file" accept="image/*" multiple hidden><input id="oneArtFile" type="file" accept="image/*" hidden>
     <div class="grid3" style="margin-top:7px"><button id="addPc" title="책상 + 모니터 + 의자. 모니터 화면에 작품을 띄웁니다">모니터 책상</button><button id="addArt" title="작품 이미지 비율대로 만들어지는 액자">작품 액자</button><button id="addPanel" title="전시장 가운데 세우는 벽">전시 가벽</button></div>
     <label class="check"><input type="checkbox" id="bpShowArt"> 설계도 화면에서도 작품 이미지 보이기</label>
+    <label class="check"><input type="checkbox" id="showCeil" checked> 촬영 화면에 천장 보이기 (편집 화면에서는 안이 보이도록 항상 숨김)</label>
     <p class="hint">여러 장을 고르면 비어 있는 모니터·액자부터 순서대로 들어갑니다. 한 점씩 바꾸려면 아래 더미 목록의 ‘이미지 넣기’를 누르세요. 액자는 ‘가까운 벽에 붙이기’로 벽이나 가벽에 딱 붙습니다. 이미지는 긴 변 1600px로 줄여 프로젝트 파일에 함께 저장됩니다.</p>
   </div>
   <div class="section">
@@ -281,7 +282,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const wrap=$('#canvasWrap'), miniWrap=$('#miniPreview'), status=$('#status'), nodeList=$('#nodeList'), track=$('#track'), playhead=$('#playhead');
 const RECORD_W=1080, RECORD_H=1920;
 const PLAN_DATA_URL='';
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0x1b1e24); scene.fog=new THREE.Fog(0x2b2f37,30,70);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xd9dcdf); scene.fog=new THREE.Fog(0xd9dcdf,30,70);
 const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.outputColorSpace=THREE.SRGBColorSpace; wrap.appendChild(renderer.domElement);
 const miniRenderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true}); miniRenderer.setPixelRatio(1); miniRenderer.shadowMap.enabled=true; miniRenderer.outputColorSpace=THREE.SRGBColorSpace; miniWrap.appendChild(miniRenderer.domElement);
 const largeWrap=$('#largePreviewCanvas');
@@ -290,13 +291,13 @@ const editorCamera=new THREE.PerspectiveCamera(50,1,.05,250); editorCamera.posit
 const shotCamera=new THREE.PerspectiveCamera(50,0.5625,.05,250); shotCamera.position.set(0,1.65,10.5); shotCamera.filmGauge=36;
 const editorControls=new OrbitControls(editorCamera,renderer.domElement); editorControls.target.set(0,1,-.5); editorControls.enableDamping=true; editorControls.mouseButtons.LEFT=THREE.MOUSE.ROTATE; editorControls.mouseButtons.RIGHT=THREE.MOUSE.PAN; editorControls.mouseButtons.MIDDLE=THREE.MOUSE.DOLLY;
 const shotControls=new OrbitControls(shotCamera,renderer.domElement); shotControls.target.set(0,1.3,2.8); shotControls.enableDamping=true; shotControls.enabled=false; shotControls.mouseButtons.LEFT=THREE.MOUSE.ROTATE; shotControls.mouseButtons.RIGHT=THREE.MOUSE.PAN; shotControls.mouseButtons.MIDDLE=THREE.MOUSE.DOLLY;
-scene.add(new THREE.HemisphereLight(0xfff4e6,0x3a3530,1.45));
-const sun=new THREE.DirectionalLight(0xfff1dc,2.1); sun.position.set(-7,10,5); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.left=-14;sun.shadow.camera.right=14;sun.shadow.camera.top=18;sun.shadow.camera.bottom=-18;scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xffffff,0xe6e6e2,2.35));
+const sun=new THREE.DirectionalLight(0xffffff,1.25); sun.position.set(-2.5,12,3.5); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.left=-14;sun.shadow.camera.right=14;sun.shadow.camera.top=18;sun.shadow.camera.bottom=-18;scene.add(sun);
 const grid=new THREE.GridHelper(24,24,0x3a4c67,0x273345); grid.position.y=.002; scene.add(grid);
 const clickable=[]; const objectsByName=new Map();
 const mats={
  snow:new THREE.MeshStandardMaterial({color:0xe8f3ff,roughness:.88}),
- floor:new THREE.MeshStandardMaterial({color:0xb9a58f,roughness:.9}),
+ floor:new THREE.MeshStandardMaterial({color:0xb4b5b1,roughness:.85}),
  wall:new THREE.MeshStandardMaterial({color:0x65708f,roughness:.92}),
  stone:new THREE.MeshStandardMaterial({color:0x59647c,roughness:.88}),
  ice:new THREE.MeshStandardMaterial({color:0x91d9ff,transparent:true,opacity:.56,roughness:.2,metalness:.05}),
@@ -670,7 +671,7 @@ function previewSize(){const a=+$('#aspect').value||16/9;return a>=1?{w:Math.rou
 function sizePreviews(){const {w,h}=previewSize();miniRenderer.setSize(w,h,false);miniRenderer.domElement.style.width='100%';miniRenderer.domElement.style.height='auto';largeRenderer.setSize(w,h,false);Object.assign(largeRenderer.domElement.style,{width:'auto',height:'auto',maxWidth:'100%',maxHeight:'100%',aspectRatio:`${w}/${h}`})}
 function resize(){renderer.setSize(wrap.clientWidth,wrap.clientHeight,false);editorCamera.aspect=wrap.clientWidth/wrap.clientHeight;editorCamera.updateProjectionMatrix();sizePreviews()}window.addEventListener('resize',resize);
 let pauseRender=false;
-function loop(nowMs){requestAnimationFrame(loop);if(pauseRender||window.__pmActive){lastFrameMs=nowMs;return}const dt=Math.min(0.1,Math.max(0,(nowMs-lastFrameMs)/1000));lastFrameMs=nowMs;if(blueprint)syncStyle();editorControls.update();shotControls.update();if(isPlaying){currentTime+=dt;{const stopAt=playUntil??duration();if(currentTime>=stopAt){currentTime=stopAt;isPlaying=false;playUntil=null}}evaluate(currentTime);updateClock()}if(mainMode==='shot'&&!isPlaying&&selectedId&&performance.now()<shotSyncUntil){const n=nodeById(selectedId);if(n){n.position.copy(shotCamera.position);n.target.copy(shotControls.target);unlinkTarget(n);const ang=computeAnglesFromTarget(n.position,n.target);n.pan=ang.pan; n.tilt=ang.tilt; n.lens=snapLens(camLensMM);n.fov=shotCamera.fov;updateHelper(n);scheduleAnalysis()}}updateLiveCameraHelper(); const showLive=(isPlaying&&mainMode==='free'); $('#liveTag').classList.toggle('active',showLive); helperGroup.visible=helpersVisible&&mainMode==='free'; liveCamGroup.visible=showLive; if(pathLine)pathLine.visible=helpersVisible&&mainMode==='free';const ghost=mainMode!=='shot'&&$('#wallGhost').checked;if(ghost){wallMat.opacity=.3;wallMat.depthWrite=false;bpWall.opacity=.22;bpWall.depthWrite=false}renderer.render(scene,mainMode==='shot'?shotCamera:editorCamera);if(ghost){wallMat.opacity=1;wallMat.depthWrite=true;bpWall.opacity=1;bpWall.depthWrite=true}updateLiveWallWarn();helperGroup.visible=false; liveCamGroup.visible=false; if(pathLine)pathLine.visible=false;setGuides(false);miniRenderer.render(scene,shotCamera);if($('#largePreviewOverlay').classList.contains('active'))largeRenderer.render(scene,shotCamera);setGuides(true);helperGroup.visible=helpersVisible; liveCamGroup.visible=showLive; if(pathLine)pathLine.visible=helpersVisible}
+function loop(nowMs){requestAnimationFrame(loop);if(pauseRender||window.__pmActive){lastFrameMs=nowMs;return}const dt=Math.min(0.1,Math.max(0,(nowMs-lastFrameMs)/1000));lastFrameMs=nowMs;if(blueprint)syncStyle();editorControls.update();shotControls.update();if(isPlaying){currentTime+=dt;{const stopAt=playUntil??duration();if(currentTime>=stopAt){currentTime=stopAt;isPlaying=false;playUntil=null}}evaluate(currentTime);updateClock()}if(mainMode==='shot'&&!isPlaying&&selectedId&&performance.now()<shotSyncUntil){const n=nodeById(selectedId);if(n){n.position.copy(shotCamera.position);n.target.copy(shotControls.target);unlinkTarget(n);const ang=computeAnglesFromTarget(n.position,n.target);n.pan=ang.pan; n.tilt=ang.tilt; n.lens=snapLens(camLensMM);n.fov=shotCamera.fov;updateHelper(n);scheduleAnalysis()}}updateLiveCameraHelper(); const showLive=(isPlaying&&mainMode==='free'); $('#liveTag').classList.toggle('active',showLive); helperGroup.visible=helpersVisible&&mainMode==='free'; liveCamGroup.visible=showLive; if(pathLine)pathLine.visible=helpersVisible&&mainMode==='free';const ghost=mainMode!=='shot'&&$('#wallGhost').checked;if(ghost){wallMat.opacity=.3;wallMat.depthWrite=false;bpWall.opacity=.22;bpWall.depthWrite=false}setCeil(mainMode==='shot');renderer.render(scene,mainMode==='shot'?shotCamera:editorCamera);if(ghost){wallMat.opacity=1;wallMat.depthWrite=true;bpWall.opacity=1;bpWall.depthWrite=true}updateLiveWallWarn();helperGroup.visible=false; liveCamGroup.visible=false; if(pathLine)pathLine.visible=false;setGuides(false);setCeil(true);miniRenderer.render(scene,shotCamera);if($('#largePreviewOverlay').classList.contains('active'))largeRenderer.render(scene,shotCamera);setGuides(true);helperGroup.visible=helpersVisible; liveCamGroup.visible=showLive; if(pathLine)pathLine.visible=helpersVisible}
 
 // ==================== v3.0 · Google Flow 연동 강화 ====================
 // 1) 모션 엔진: 화면에 그려진 스플라인과 실제 카메라 이동을 일치시키고, 샷 단위 이징 적용
@@ -993,7 +994,7 @@ function applyMeasure(){
 const dummies=[];let dummyCounter=1,pendingDummy=null,movingDummyId=null;
 const dummyMat=new THREE.MeshStandardMaterial({color:0xd9a37a,roughness:.7}),propMat=new THREE.MeshStandardMaterial({color:0x8fa3b8,roughness:.8});
 const micMat=new THREE.MeshStandardMaterial({color:0x1b1d24,roughness:.5,metalness:.3}),micHeadMat=new THREE.MeshStandardMaterial({color:0x9aa1ad,roughness:.35,metalness:.6});
-const stageMat=new THREE.MeshStandardMaterial({color:0x5b4a3e,roughness:.8}),deskMat=new THREE.MeshStandardMaterial({color:0xa0785a,roughness:.75}),chairMat=new THREE.MeshStandardMaterial({color:0x7d5b43,roughness:.8});
+const stageMat=new THREE.MeshStandardMaterial({color:0x5b4a3e,roughness:.8}),deskMat=new THREE.MeshStandardMaterial({color:0xdcc49e,roughness:.7}),chairMat=new THREE.MeshStandardMaterial({color:0x25282d,roughness:.85}),legMat=new THREE.MeshStandardMaterial({color:0x8d9299,roughness:.5,metalness:.35}),seatMat=new THREE.MeshStandardMaterial({color:0x2c3a5c,roughness:.9});
 const lightBodyMat=new THREE.MeshStandardMaterial({color:0x2a2f3a,roughness:.5,metalness:.4,emissive:0x3a2a08,emissiveIntensity:.6});
 const PERSON_TYPES=['standing','sitting','singer','clap'];
 const DUMMY_LABEL={standing:'서있음',sitting:'앉음',singer:'가수',clap:'박수 관객',box:'소품',stage:'무대 단',desk:'책상',chair:'의자',light:'무대등',pc:'모니터 책상',art:'작품 액자',panel:'전시 가벽'};
@@ -1049,11 +1050,11 @@ function buildDummy(d){
   }
   else if(d.type==='pc'){
     g.add(boxAt(1.2,.04,.6,deskMat,0,DESK_H-.02,0));
-    for(const sx of[-1,1])for(const sz of[-1,1])g.add(boxAt(.05,DESK_H-.04,.05,deskMat,sx*.55,(DESK_H-.04)/2,sz*.25));
+    for(const sx of[-1,1])for(const sz of[-1,1])g.add(boxAt(.05,DESK_H-.04,.05,legMat,sx*.55,(DESK_H-.04)/2,sz*.25));
     g.add(boxAt(.24,.015,.17,monMat,0,DESK_H+.008,-.12),boxAt(.05,.16,.04,monMat,0,DESK_H+.08,-.145));
     g.add(boxAt(SCR_W+.03,SCR_H+.03,.025,monMat,0,SCR_Y,-.12),boxAt(.42,.014,.13,keyMat,0,DESK_H+.007,.13));
     const f=fitInside(d.ar||SCR_W/SCR_H,SCR_W,SCR_H);g.add(artPlane(d,f.w,f.h,0,SCR_Y,-.12+.0135));
-    if(d.chair){const c=new THREE.Group();c.add(boxAt(.42,.04,.42,chairMat,0,CHAIR_SEAT_H-.02,0),boxAt(.42,.42,.04,chairMat,0,CHAIR_SEAT_H+.21,-.19));for(const sx of[-1,1])for(const sz of[-1,1])c.add(boxAt(.04,CHAIR_SEAT_H-.04,.04,chairMat,sx*.18,(CHAIR_SEAT_H-.04)/2,sz*.18));c.position.z=.62;c.rotation.y=Math.PI;g.add(c)}
+    if(d.chair){const c=new THREE.Group();c.add(boxAt(.44,.06,.44,seatMat,0,CHAIR_SEAT_H-.03,0),boxAt(.42,.42,.04,chairMat,0,CHAIR_SEAT_H+.21,-.19));for(const sx of[-1,1])for(const sz of[-1,1])c.add(boxAt(.04,CHAIR_SEAT_H-.06,.04,chairMat,sx*.18,(CHAIR_SEAT_H-.04)/2,sz*.18));c.position.z=.62;c.rotation.y=Math.PI;g.add(c)}
   }
   else if(d.type==='art'){
     const w=d.w,h=artHeight(d);
@@ -1199,7 +1200,9 @@ function faceAudienceToStage(){
 const walls=[];let wallCounter=1;
 const wallGroup=new THREE.Group();scene.add(wallGroup);
 const wallDraftGroup=new THREE.Group();wallDraftGroup.userData.previsGuide=true;scene.add(wallDraftGroup);
-const wallMat=new THREE.MeshStandardMaterial({color:0xe8e2d8,roughness:.95,transparent:true,opacity:1});
+const ceilMat=new THREE.MeshBasicMaterial({color:0xe6e8e8,side:THREE.DoubleSide}),ceilLightMat=new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide});
+function setCeil(v){const on=v&&$('#showCeil').checked;walls.forEach(w=>{if(w.ceil)w.ceil.visible=on})}
+const wallMat=new THREE.MeshStandardMaterial({color:0xf1f1ee,roughness:.95,transparent:true,opacity:1});
 const OPENING_DEFAULT={door:{width:.9,sill:0,top:2.1},window:{width:1.2,sill:.9,top:2.1}};
 const wallDraft={pts:[],hover:null};
 function wallSegCount(w){return w.closed?w.pts.length:w.pts.length-1}
@@ -1224,9 +1227,18 @@ function buildWall(w){
     for(const [s0,s1,y0,y1,kind] of pieces){
       const len=s1-s0,hh=y1-y0;if(len<.005||hh<.005)continue;
       const glass=kind==='glass',m=new THREE.Mesh(new THREE.BoxGeometry(len,hh,glass?.02:w.thick),glass?mats.glass:wallMat),mid=(s0+s1)/2;
-      m.position.set(a[0]+ux*mid,y0+hh/2,a[1]+uz*mid);m.rotation.y=ang;m.castShadow=!glass;m.receiveShadow=true;
+      m.position.set(a[0]+ux*mid,y0+hh/2,a[1]+uz*mid);m.rotation.y=ang;m.castShadow=false;m.receiveShadow=true;
       m.userData.wallPiece={wallId:w.id,seg:i};if(glass)m.userData.objectName=`${w.name} 창`;g.add(m);
     }
+  }
+  w.ceil=null;
+  if(w.closed&&w.pts.length>=3){ // 닫힌 방에는 흰 천장 + 조명 패널 (촬영 화면에서만 보임)
+    const sh=new THREE.Shape(w.pts.map(p=>new THREE.Vector2(p[0],p[1]))),c=new THREE.Group();
+    const top=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(Math.PI/2),ceilMat);top.position.y=w.h;c.add(top);
+    const xs=w.pts.map(p=>p[0]),zs=w.pts.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);
+    const nx=Math.max(1,Math.round((x1-x0)/3)),nz=Math.max(1,Math.round((z1-z0)/2.4));
+    for(let i=0;i<nx;i++)for(let j=0;j<nz;j++){const l=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.3).rotateX(Math.PI/2),ceilLightMat);l.position.set(x0+(i+.5)*(x1-x0)/nx,w.h-.012,z0+(j+.5)*(z1-z0)/nz);c.add(l)}
+    c.traverse(o=>{o.userData.noSolid=true;o.raycast=()=>{}});c.visible=false;g.add(c);w.ceil=c;
   }
   wallGroup.add(g);w.obj=g;
 }
@@ -1563,7 +1575,7 @@ async function exportFlowPackage(){
 }
 
 // ---------- 저장 / 불러오기 ----------
-function projectData(){return{version:'3.2-artwork',duration:duration(),aspect:+$('#aspect').value,easing:easingMode(),clipLength:clipLen(),shotCuts:boundaries().slice(1,-1),shotMeta:shotMeta.map(m=>({...m})),scene:sceneText(),
+function projectData(){return{version:'3.3-artwork',duration:duration(),aspect:+$('#aspect').value,easing:easingMode(),clipLength:clipLen(),shotCuts:boundaries().slice(1,-1),shotMeta:shotMeta.map(m=>({...m})),scene:sceneText(),
   plan:{...planCfg},planImage:planDataUrl!==PLAN_DATA_URL?planDataUrl:null,refImage:($('#refImg').src||'').startsWith('data:')?$('#refImg').src:null,
   walls:walls.map(w=>({name:w.name,h:w.h,thick:w.thick,closed:w.closed,pts:w.pts.map(p=>[+p[0].toFixed(3),+p[1].toFixed(3)]),openings:w.openings.map(o=>({...o}))})),
   dummies:dummies.map(d=>({type:d.type,name:d.name,x:+d.x.toFixed(3),z:+d.z.toFixed(3),rot:d.rot,...(d.type==='stage'?{w:d.w,depth:d.depth,h:d.h}:d.type==='light'?{h:d.h,tilt:d.tilt,spread:d.spread,intensity:d.intensity,aim:d.aim}:d.type==='pc'?{img:d.img,ar:d.ar,chair:d.chair}:d.type==='art'?{img:d.img,ar:d.ar,w:d.w,cy:d.cy}:d.type==='panel'?{w:d.w,h:d.h}:{})})),
