@@ -81,13 +81,15 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .opRow input{width:100%;min-width:0;background:#0b1119;color:#fff;border:1px solid var(--line);border-radius:6px;padding:3px;font-size:10.5px}.dummyItem .opRow button{padding:2px 0;font-size:11px}
 #wallWarn{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(125,21,35,.92);color:#fff1f2;padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--red);display:none;pointer-events:none}#wallWarn.active{display:block}
 #wallWarnMini{display:none;color:#ff9aa6;font-weight:700}#wallWarnMini.active{display:inline}
+header select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px 10px;max-width:190px}
 @media(max-width:1400px){#app{grid-template-columns:225px 1fr 420px}}
 </style>
 </head>
 <body>
 <div id="app">
 <header>
-  <h1>☕ Cafe Camera Previs <span class="badge">3D 동선 설계 · Flow 연동</span></h1>
+  <h1><span id="appTitle">☕ Cafe Camera Previs</span> <span class="badge">3D 동선 설계 · Flow 연동</span></h1>
+  <select id="spacePreset" title="저장해 둔 공간 배치를 엽니다"><option value="">공간: 빈 카페</option></select>
   <button id="saveProject">프로젝트 저장</button>
   <button id="loadProject">불러오기</button><input id="loadFile" type="file" accept="application/json" hidden>
   <button id="shotPackage">샷 패키지 JSON</button>
@@ -126,6 +128,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
     <div class="grid2" style="margin-top:7px"><button id="addDoor">🚪 문 뚫기</button><button id="addWindow">🪟 창 뚫기</button></div>
     <div class="row"><label>새 벽 높이 m</label><input id="wallHeight" type="number" min="0.5" max="8" step="0.05" value="2.7"></div>
     <label class="check"><input type="checkbox" id="wallGhost" checked> 편집 화면에서 벽 반투명 (카메라 화면에는 항상 불투명하게 보임)</label>
+    <label class="check"><input type="checkbox" id="ceilingOn"> 천장 덮기 (아래에서만 보여 위에서 내려다보는 편집 화면은 가리지 않음)</label>
     <div id="wallWarnInfo" class="hint"></div>
     <div id="wallList" class="dummyList"></div>
     <p class="hint">‘벽 그리기’를 누르고 도면 위를 차례로 클릭하면 벽 선이 이어집니다. 첫 점을 다시 누르면 방이 닫히고, 마지막 점을 한 번 더 누르거나 Enter·‘그리기 완료’로 끝냅니다. Shift: 수평·수직 고정 · Backspace: 마지막 점 취소 · Esc: 취소. 다른 벽 끝점 근처는 자동으로 붙습니다.</p>
@@ -136,6 +139,8 @@ button:disabled{opacity:.4;cursor:not-allowed}
     <div class="grid3"><button id="addPersonStand">인물 서기</button><button id="addPersonSit">인물 앉기</button><button id="addPropBox">소품 박스</button></div>
     <div class="grid2" style="margin-top:7px"><button id="addSinger" title="서서 한 손으로 마이크를 든 자세">🎤 가수</button><button id="addClapper" title="앉아서 두 손을 가슴 앞에 모은 자세">👏 박수 관객</button></div>
     <div class="grid3" style="margin-top:7px"><button id="addStage" title="가로·세로·높이를 목록에서 조절">무대 단</button><button id="addDesk" title="상판 높이 72cm">책상 72cm</button><button id="addChair" title="앉는 높이 45cm">의자 45cm</button></div>
+    <div class="grid3" style="margin-top:7px"><button id="addCheers" title="앉아서 한 손으로 잔을 내민 자세">🍶 건배 손님</button><button id="addShelf" title="술병·도자기가 놓인 진열 선반. 폭을 목록에서 조절">진열 선반</button><button id="addCounter" title="가로·세로·높이를 목록에서 조절">카운터</button></div>
+    <div class="grid2" style="margin-top:7px"><button id="addLantern" class="gold" title="천장에서 내려온 따뜻한 등. 높이·밝기를 목록에서 조절">🏮 한지등</button><button id="addSetmenu" title="책상·카운터 위에 놓으면 상판 높이로 올라갑니다">한 상 차림</button></div>
     <div class="grid2" style="margin-top:7px"><button id="addLight" class="gold" title="위치·방향·범위를 원뿔로 표시">💡 무대등</button><button id="selectAudience">관객 전체 선택</button></div>
     <button id="faceStage" class="blue" style="width:100%;margin-top:7px">선택한 관객 → 무대 쪽 보기</button>
     <div id="dummyList" class="dummyList"></div>
@@ -266,7 +271,7 @@ const editorCamera=new THREE.PerspectiveCamera(50,1,.05,250); editorCamera.posit
 const shotCamera=new THREE.PerspectiveCamera(50,0.5625,.05,250); shotCamera.position.set(0,1.65,10.5); shotCamera.filmGauge=36;
 const editorControls=new OrbitControls(editorCamera,renderer.domElement); editorControls.target.set(0,1,-.5); editorControls.enableDamping=true; editorControls.mouseButtons.LEFT=THREE.MOUSE.ROTATE; editorControls.mouseButtons.RIGHT=THREE.MOUSE.PAN; editorControls.mouseButtons.MIDDLE=THREE.MOUSE.DOLLY;
 const shotControls=new OrbitControls(shotCamera,renderer.domElement); shotControls.target.set(0,1.3,2.8); shotControls.enableDamping=true; shotControls.enabled=false; shotControls.mouseButtons.LEFT=THREE.MOUSE.ROTATE; shotControls.mouseButtons.RIGHT=THREE.MOUSE.PAN; shotControls.mouseButtons.MIDDLE=THREE.MOUSE.DOLLY;
-scene.add(new THREE.HemisphereLight(0xfff4e6,0x3a3530,1.45));
+const hemi=new THREE.HemisphereLight(0xfff4e6,0x3a3530,1.45);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff1dc,2.1); sun.position.set(-7,10,5); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.left=-14;sun.shadow.camera.right=14;sun.shadow.camera.top=18;sun.shadow.camera.bottom=-18;scene.add(sun);
 const grid=new THREE.GridHelper(24,24,0x3a4c67,0x273345); grid.position.y=.002; scene.add(grid);
 const clickable=[]; const objectsByName=new Map();
@@ -389,7 +394,7 @@ async function recordWebM(){
   const stream=miniRenderer.domElement.captureStream(fps);let mime='video/webm;codecs=vp9';if(!MediaRecorder.isTypeSupported(mime))mime='video/webm';
   const rec=new MediaRecorder(stream,{mimeType:mime});const chunks=[];
   rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
-  rec.onstop=()=>{const blob=new Blob(chunks,{type:mime}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`cafe_camera_walk_${w}x${h}_${fps}fps.webm`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);recording=false;$('#recordVideo').textContent='영상 뽑기 WebM';status.textContent=`영상 저장 완료 · ${w}×${h} / ${fps}fps`;resize();updateAspect();};
+  rec.onstop=()=>{const blob=new Blob(chunks,{type:mime}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`${SPACE.prefix}_camera_walk_${w}x${h}_${fps}fps.webm`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);recording=false;$('#recordVideo').textContent='영상 뽑기 WebM';status.textContent=`영상 저장 완료 · ${w}×${h} / ${fps}fps`;resize();updateAspect();};
   currentTime=0;evaluate(0);updateClock();lastFrameMs=performance.now();rec.start();playUntil=null;isPlaying=true;setTimeout(()=>{isPlaying=false;rec.stop()},Math.ceil(duration()*1000)+300);
 }
 
@@ -519,7 +524,7 @@ async function recordSegmentBlob(start,end,w,h,fps,label=''){return await encode
 async function exportFullMp4(){
   if(recording){status.textContent='다른 영상 작업이 진행 중입니다.';return}
   const {w,h}=getVideoSize(),fps=+$('#videoFps').value||30;$('#recordVideo').textContent='● MP4 인코딩 중…';$('#recordVideo').disabled=true;
-  try{const b=await encodeMp4(0,duration(),w,h,fps);downloadBlob(b,`cafe_camera_walk_${w}x${h}_${fps}fps.mp4`);status.textContent=`MP4 저장 완료 · ${w}×${h} / ${fps}fps · ${duration().toFixed(1)}초`}
+  try{const b=await encodeMp4(0,duration(),w,h,fps);downloadBlob(b,`${SPACE.prefix}_camera_walk_${w}x${h}_${fps}fps.mp4`);status.textContent=`MP4 저장 완료 · ${w}×${h} / ${fps}fps · ${duration().toFixed(1)}초`}
   catch(err){console.error(err);alert('MP4 만들기 실패: '+(err?.message||err));status.textContent='MP4 만들기 실패'}
   finally{$('#recordVideo').textContent='영상 뽑기 MP4';$('#recordVideo').disabled=false}
 }
@@ -541,7 +546,7 @@ async function exportSplitVideosZip(){
     }
     zip.file('split_manifest.txt',[`Format: MP4 (H.264)`,`Total duration: ${duration().toFixed(2)}s`,`Split count: ${ranges.length}`,`Resolution: ${w}x${h}`,`FPS: ${fps}`,'',...meta].join('\n'));
     const out=await zip.generateAsync({type:'blob'});
-    downloadBlob(out,`cafe_split_videos_${ranges.length}parts_${w}x${h}_${fps}fps.zip`);
+    downloadBlob(out,`${SPACE.prefix}_split_videos_${ranges.length}parts_${w}x${h}_${fps}fps.zip`);
     status.textContent=`분할 영상 ZIP 저장 완료 · ${ranges.length}개`;
   }catch(err){
     console.error(err);
@@ -568,7 +573,7 @@ async function exportTimesZip(times,filename){
 async function exportIntervalZip(){
   const step=Math.max(.1,+$('#shotInterval').value||3),dur=duration(),times=[];
   for(let t=0;t<dur-.0001;t+=step)times.push(+t.toFixed(4)); if(!times.length||Math.abs(times.at(-1)-dur)>.001)times.push(dur);
-  await exportTimesZip(times,`cafe_interval_${String(step).replace('.','p')}s.zip`);
+  await exportTimesZip(times,`${SPACE.prefix}_interval_${String(step).replace('.','p')}s.zip`);
 }
 async function exportSelectedNodePng(){
   const n=nodeById(selectedId);if(!n){status.textContent='먼저 노드를 선택하세요.';return}
@@ -581,7 +586,7 @@ async function exportAllNodesZip(){
   const oldPos=shotCamera.position.clone(),oldTarget=shotControls.target.clone(),oldFov=shotCamera.fov;
   for(let i=0;i<arr.length;i++){applyNode(arr[i]);const blob=await renderShotBlob(w,h);zip.file(`${String(i+1).padStart(2,'0')}_${arr[i].name}_${arr[i].targetName}.png`,blob);status.textContent=`노드 PNG ${i+1}/${arr.length} 생성 중…`}
   shotCamera.position.copy(oldPos);shotControls.target.copy(oldTarget);shotCamera.fov=oldFov;shotCamera.updateProjectionMatrix();
-  const out=await zip.generateAsync({type:'blob'});downloadBlob(out,'cafe_all_nodes.zip');status.textContent=`전체 노드 ZIP 저장 완료 · ${arr.length}장`;
+  const out=await zip.generateAsync({type:'blob'});downloadBlob(out,`${SPACE.prefix}_all_nodes.zip`);status.textContent=`전체 노드 ZIP 저장 완료 · ${arr.length}장`;
 }
 
 function exportMdFile(){
@@ -589,7 +594,7 @@ function exportMdFile(){
   const lines=['# Cafe Camera Previs Settings','',`- Duration: ${d.duration}s`,`- Aspect: ${d.aspect}`,'','## Nodes',''];
   d.nodes.forEach((n,i)=>{lines.push(`### ${i+1}. ${n.name}`,`- Time: ${n.time}s`,`- Hold: ${n.hold}s`,`- Target: ${n.targetName}`,`- Aim mode: ${n.aimMode}`,`- Lens: ${n.lens}mm`,`- Pan: ${Math.round(n.pan||0)}°`,`- Tilt: ${Math.round(n.tilt||0)}°`,`- Position: ${n.position.join(', ')}`,`- Target XYZ: ${n.target.join(', ')}`,'')});
   lines.push('## MACHINE_DATA_JSON','','```json',JSON.stringify(d,null,2),'```','');
-  downloadBlob(new Blob([lines.join('\n')],{type:'text/markdown;charset=utf-8'}),'cafe_camera_settings.md');status.textContent='카메라 설정 MD 저장 완료';
+  downloadBlob(new Blob([lines.join('\n')],{type:'text/markdown;charset=utf-8'}),`${SPACE.prefix}_camera_settings.md`);status.textContent='카메라 설정 MD 저장 완료';
 }
 function importMdText(txt){
   try{
@@ -606,10 +611,10 @@ $('#deleteNode').onclick=()=>{if(!selectedId)return;const i=nodes.findIndex(n=>n
 $('#snapCurrent').onclick=()=>{const n=nodeById(selectedId);if(!n)return;n.position.copy(shotCamera.position);n.target.copy(shotControls.target);unlinkTarget(n);const ang=computeAnglesFromTarget(n.position,n.target);n.pan=ang.pan; n.tilt=ang.tilt; n.lens=lensFromFov(shotCamera.fov);n.fov=shotCamera.fov;selectNode(n.id);updateHelper(n);rebuildPath()};$('#showSelected').onclick=()=>{const n=nodeById(selectedId);if(!n)return;applyNode(n);setMainMode('shot')};
 $('#prevNode').onclick=()=>{const a=sorted(),i=a.findIndex(n=>n.id===selectedId);if(i>0){selectNode(a[i-1].id);applyNode(a[i-1])}};$('#nextNode').onclick=()=>{const a=sorted(),i=a.findIndex(n=>n.id===selectedId);if(i>=0&&i<a.length-1){selectNode(a[i+1].id);applyNode(a[i+1])}};
 $('#duration').onchange=e=>{$('#timeSlider').max=duration();if(currentTime>duration())currentTime=duration();renderTimeline();refreshSplitPreview();ensureMeta();renderShotList();scheduleAnalysis();if(e)fitDurationToNodes(true)};$('#splitCount').oninput=refreshSplitPreview;$('#aspect').onchange=updateAspect;$('#playBtn').onclick=()=>{lastFrameMs=performance.now();isPlaying=true;setMainMode('free')};$('#stopBtn').onclick=()=>isPlaying=false;$('#homeBtn').onclick=()=>{currentTime=0;evaluate(0);updateClock()};$('#endBtn').onclick=()=>{currentTime=duration();evaluate(currentTime);updateClock()};$('#timeSlider').oninput=e=>{currentTime=+e.target.value;evaluate(currentTime);updateClock()};
-$('#saveProject').onclick=()=>saveJson('cafe_previs_project.json',projectData());$('#loadProject').onclick=()=>$('#loadFile').click();$('#loadFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;loadData(JSON.parse(await f.text()));e.target.value=''};$('#shotPackage').onclick=shotPackage;$('#capturePng').onclick=downloadPng;$('#recordVideo').onclick=exportFullMp4;
+$('#saveProject').onclick=()=>saveJson(`${SPACE.prefix}_previs_project.json`,projectData());$('#loadProject').onclick=()=>$('#loadFile').click();$('#loadFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;loadData(JSON.parse(await f.text()));e.target.value=''};$('#shotPackage').onclick=shotPackage;$('#capturePng').onclick=downloadPng;$('#recordVideo').onclick=exportFullMp4;
 
 $('#exportIntervalZip').onclick=exportIntervalZip;
-$('#exportPresetZip').onclick=()=>exportTimesZip([0,8,16,24,32,40].filter(t=>t<=duration()),'cafe_0_8_16_24_32_40s.zip');
+$('#exportPresetZip').onclick=()=>exportTimesZip([0,8,16,24,32,40].filter(t=>t<=duration()),`${SPACE.prefix}_0_8_16_24_32_40s.zip`);
 $('#previewSplitRanges').onclick=refreshSplitPreview;$('#exportSplitVideosZip').onclick=exportSplitVideosZip;
 $('#exportSelectedNodePng').onclick=exportSelectedNodePng;
 $('#exportAllNodesZip').onclick=exportAllNodesZip;
@@ -664,6 +669,16 @@ const DEFAULT_SCENE={
   style:'Bright and inviting cinematic cafe promo look, natural soft daylight mixed with warm pendant lighting, gentle shallow depth of field, realistic materials and textures, consistent interior design and lighting across every shot.',
   avoid:'No extra people beyond those in the frame, no layout or furniture changes, no objects teleporting, no warped hands or faces, no text, logos or subtitles inside the generated scene.'
 };
+// 공간마다 달라지는 이름·프롬프트 문구. 공간 배치 파일(spaces/*.json)의 space 값으로 덮어씀
+const SPACE_DEFAULT={id:'cafe',title:'☕ Cafe Camera Previs',docTitle:'카페 카메라 프리비즈',prefix:'cafe',place:'cafe interior',
+  ambient:'Gentle ambient life: steam rises from coffee cups and the light shifts softly',
+  continuity:'the walls, windows, counter, furniture, stage, people and lighting'};
+const SPACE={...SPACE_DEFAULT};
+function applySpace(){$('#appTitle').textContent=SPACE.title;document.title=SPACE.docTitle}
+// 회색 박스 화면의 벽·바닥 색과 기본 조명 밝기. 공간 배치 파일의 look 값으로 덮어씀
+const LOOK_DEFAULT={wall:'#e8e2d8',floor:'#b9a58f',bg:'#1b1e24',hemi:1.45,sun:2.1};
+const LOOK={...LOOK_DEFAULT};
+function applyLook(l){Object.assign(LOOK,LOOK_DEFAULT,l||{});wallMat.color.set(LOOK.wall);ceilingMat.color.set(LOOK.wall);mats.floor.color.set(LOOK.floor);scene.background.set(LOOK.bg);hemi.intensity=+LOOK.hemi;sun.intensity=+LOOK.sun}
 
 // ---------- 공통 유틸 ----------
 const clamp=THREE.MathUtils.clamp;
@@ -790,8 +805,8 @@ function drawPath(samples){
 }
 function autoSubject(s0,s1){
   const a=sorted();let pick=a.filter(n=>n.time>=s0-.01&&n.time<=s1+.01).at(-1)||a.filter(n=>n.time<=s1).at(-1)||a[0];
-  if(!pick)return {ko:'공간 전체',en:'the cafe interior'};
-  const nm=pick.targetName;if(GENERIC_TARGETS.has(nm))return {ko:'공간 전체',en:'the cafe interior'};
+  if(!pick)return {ko:'공간 전체',en:`the ${SPACE.place}`};
+  const nm=pick.targetName;if(GENERIC_TARGETS.has(nm))return {ko:'공간 전체',en:`the ${SPACE.place}`};
   return {ko:nm,en:EN_NAMES[nm]||nm};
 }
 function lensWord(mm){return mm<=18?'ultra-wide':mm<=28?'wide-angle':mm<=40?'natural wide':mm<=60?'standard':'telephoto'}
@@ -863,9 +878,9 @@ function buildVideoPrompt(r,total){
     `Camera: ${r.term}${extra}, ${r.mv.angle} at ${r.mv.avgY.toFixed(1)} m height, ${lens}, smooth stabilized gimbal movement, ${pace}. No zoom, no cuts.`,
     `Subject: keep ${r.subjEn} as the focal point of the frame.`,
     `Scene: ${sc.desc}`,
-    `Action: ${(m.action||'').trim()||'Gentle ambient life: steam rises from coffee cups and the light shifts softly, while everyone keeps their exact positions unless the shot action says otherwise.'}${people?` Keep the ${people} ${people>1?'people':'person'} exactly where they appear in the first frame.`:''}`,
+    `Action: ${(m.action||'').trim()||`${SPACE.ambient}, while everyone keeps their exact positions unless the shot action says otherwise.`}${people?` Keep the ${people} ${people>1?'people':'person'} exactly where they appear in the first frame.`:''}`,
     `Style: ${sc.style}`,
-    `Continuity: the camera starts exactly on the first frame and ends exactly on the last frame; the walls, windows, counter, furniture, stage, people and lighting stay spatially consistent for the whole clip.`,
+    `Continuity: the camera starts exactly on the first frame and ends exactly on the last frame; ${SPACE.continuity} stay spatially consistent for the whole clip.`,
     sc.avoid?`Avoid: ${sc.avoid}`:''
   ].filter(Boolean).join('\n');
 }
@@ -874,7 +889,7 @@ function buildKeyPrompt(r){
   return [
     `[Keyframe K${pad2(r.i)} (start) and K${pad2(r.i+1)} (end) — image restyle]`,
     `Image 1 is a gray-box 3D previs frame. Image 2 is the style reference.${r.i>0?' Image 3 is the already finished previous keyframe.':''}`,
-    `Recreate image 1 as the realistic cafe interior described below. Keep EXACTLY the same camera position, viewing angle, ${L}mm lens perspective, horizon line, and the position, size and angle of every wall, door, window, person, table, chair, stage, light and prop. Only upgrade detail, materials, people rendering, atmosphere and lighting.`,
+    `Recreate image 1 as the realistic ${SPACE.place} described below. Keep EXACTLY the same camera position, viewing angle, ${L}mm lens perspective, horizon line, and the position, size and angle of every wall, door, window, person, table, chair, stage, light and prop. Only upgrade detail, materials, people rendering, atmosphere and lighting.`,
     `World: ${sc.desc}`,
     `Look: ${sc.style}`,
     r.i>0?'Match the materials, colors and light of image 3 exactly so consecutive frames look like the same place.':'',
@@ -883,7 +898,7 @@ function buildKeyPrompt(r){
 }
 function sceneText(){return {desc:$('#sceneDesc').value.trim(),style:$('#sceneStyle').value.trim(),avoid:$('#sceneAvoid').value.trim()}}
 function runAnalysis(){
-  anaTimer=null;computeSolids();ensureMeta();
+  anaTimer=null;updateCeiling();computeSolids();ensureMeta();
   const samples=nodes.length?sampleMotion():[];drawPath(samples);
   const b=boundaries();const shots=nodes.length?b.slice(0,-1).map((_,i)=>analyzeShot(i,b,samples)):[];
   lastAnalysis={samples,shots,bounds:b};updateWallWarnings(samples);
@@ -968,11 +983,17 @@ const dummyMat=new THREE.MeshStandardMaterial({color:0xd9a37a,roughness:.7}),pro
 const micMat=new THREE.MeshStandardMaterial({color:0x1b1d24,roughness:.5,metalness:.3}),micHeadMat=new THREE.MeshStandardMaterial({color:0x9aa1ad,roughness:.35,metalness:.6});
 const stageMat=new THREE.MeshStandardMaterial({color:0x5b4a3e,roughness:.8}),deskMat=new THREE.MeshStandardMaterial({color:0xa0785a,roughness:.75}),chairMat=new THREE.MeshStandardMaterial({color:0x7d5b43,roughness:.8});
 const lightBodyMat=new THREE.MeshStandardMaterial({color:0x2a2f3a,roughness:.5,metalness:.4,emissive:0x3a2a08,emissiveIntensity:.6});
-const PERSON_TYPES=['standing','sitting','singer','clap'];
-const DUMMY_LABEL={standing:'서있음',sitting:'앉음',singer:'가수',clap:'박수 관객',box:'소품',stage:'무대 단',desk:'책상',chair:'의자',light:'무대등'};
-const DUMMY_BASE={standing:'인물',sitting:'인물',singer:'가수',clap:'관객',box:'소품',stage:'무대',desk:'책상',chair:'의자',light:'무대등'};
-const DUMMY_TARGET_Y={box:.45,sitting:1.2,clap:1.2,standing:1.5,singer:1.5,desk:.75,chair:.5};
-const DESK_H=.72,CHAIR_SEAT_H=.45,LIGHT_MAX_RANGE=15;
+const shelfMat=new THREE.MeshStandardMaterial({color:0x6b4a33,roughness:.8}),counterMat=new THREE.MeshStandardMaterial({color:0x7a563b,roughness:.75}),counterTopMat=new THREE.MeshStandardMaterial({color:0x4a3324,roughness:.6});
+const bottleMat=new THREE.MeshStandardMaterial({color:0xf1ead8,roughness:.45}),jarMat=new THREE.MeshStandardMaterial({color:0x8a5a3c,roughness:.6}),celadonMat=new THREE.MeshStandardMaterial({color:0xa9c4b4,roughness:.4});
+const paperMat=new THREE.MeshStandardMaterial({color:0xffe9c4,roughness:.9,emissive:0xffb45e,emissiveIntensity:1.1}),cordMat=new THREE.MeshStandardMaterial({color:0x2a2420,roughness:.8});
+const kimchiMat=new THREE.MeshStandardMaterial({color:0xb5452e,roughness:.7}),riceCakeMat=new THREE.MeshStandardMaterial({color:0xf6efe2,roughness:.85});
+function cylAt(rt,rb,h,mat,x,y,z){const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,16),mat);m.position.set(x,y,z);return m}
+const PERSON_TYPES=['standing','sitting','singer','clap','cheers'];
+const DUMMY_LABEL={standing:'서있음',sitting:'앉음',singer:'가수',clap:'박수 관객',cheers:'건배 손님',box:'소품',stage:'무대 단',desk:'책상',chair:'의자',light:'무대등',shelf:'진열 선반',counter:'카운터',lantern:'한지등',setmenu:'한 상 차림'};
+const DUMMY_BASE={standing:'인물',sitting:'인물',singer:'가수',clap:'관객',cheers:'손님',box:'소품',stage:'무대',desk:'책상',chair:'의자',light:'무대등',shelf:'진열 선반',counter:'카운터',lantern:'한지등',setmenu:'한 상'};
+const DUMMY_TARGET_Y={box:.45,sitting:1.2,clap:1.2,cheers:1.2,standing:1.5,singer:1.5,desk:.75,chair:.5,shelf:1.3,setmenu:.08};
+const DESK_H=.72,CHAIR_SEAT_H=.45,LIGHT_MAX_RANGE=15,SHELF_H=1.9,SHELF_D=.35;
+const SIZED_TYPES=['stage','counter'],FIXED_Y_TYPES=['stage','light','counter','lantern'];
 function isPerson(d){return PERSON_TYPES.includes(d.type)}
 function isAudience(d){return isPerson(d)&&d.type!=='singer'}
 // 두 점을 잇는 팔·다리 (캡슐)
@@ -997,6 +1018,34 @@ function buildDummy(d){
     for(const sx of[-1,1])for(const sz of[-1,1])g.add(boxAt(.04,CHAIR_SEAT_H-.04,.04,chairMat,sx*.18,(CHAIR_SEAT_H-.04)/2,sz*.18));
     g.add(boxAt(.42,.42,.04,chairMat,0,CHAIR_SEAT_H+.21,-.19));
   }
+  else if(d.type==='counter'){
+    g.add(boxAt(d.w,d.h-.04,d.depth,counterMat,0,(d.h-.04)/2,0),boxAt(d.w+.06,.04,d.depth+.06,counterTopMat,0,d.h-.02,0));
+  }
+  else if(d.type==='shelf'){ // 앞면이 +z를 향하는 진열 선반. 칸마다 술병과 도자기를 번갈아 놓음
+    const w=d.w,rows=[.04,.5,.96,1.42];
+    g.add(boxAt(w,SHELF_H,.02,shelfMat,0,SHELF_H/2,-SHELF_D/2+.01),boxAt(.03,SHELF_H,SHELF_D,shelfMat,-w/2+.015,SHELF_H/2,0),boxAt(.03,SHELF_H,SHELF_D,shelfMat,w/2-.015,SHELF_H/2,0),boxAt(w,.03,SHELF_D,shelfMat,0,SHELF_H-.015,0));
+    const n=Math.max(1,Math.floor((w-.16)/.2));
+    rows.forEach((y,ri)=>{
+      g.add(boxAt(w-.06,.03,SHELF_D-.02,shelfMat,0,y,0));
+      for(let k=0;k<n;k++){
+        const x=(k-(n-1)/2)*((w-.16)/n),top=y+.015;
+        if((k+ri)%3===2)g.add(cylAt(.06,.075,.17,(k+ri)%2?jarMat:celadonMat,x,top+.085,.02));
+        else g.add(cylAt(.042,.042,.24,bottleMat,x,top+.12,.02),cylAt(.016,.03,.07,bottleMat,x,top+.275,.02));
+      }
+    });
+  }
+  else if(d.type==='lantern'){ // 천장에서 내려온 한지등. 아래 방향·사방으로 따뜻한 빛
+    const top=Math.max(d.h+.6,2.7);
+    g.add(cylAt(.16,.16,.3,paperMat,0,d.h,0),cylAt(.17,.17,.02,shelfMat,0,d.h+.16,0),cylAt(.17,.17,.02,shelfMat,0,d.h-.16,0),cylAt(.006,.006,top-d.h-.17,cordMat,0,(top+d.h+.17)/2,0));
+    const pl=new THREE.PointLight(0xffb066,d.intensity,7,1.4);pl.name='glow';pl.position.set(0,d.h-.2,0);g.add(pl);
+  }
+  else if(d.type==='setmenu'){ // 쟁반 · 술 주전자 · 잔 2개 · 김치 · 떡
+    g.add(boxAt(.46,.02,.32,shelfMat,0,.01,0));
+    g.add(cylAt(.04,.05,.17,bottleMat,-.14,.105,0),cylAt(.018,.03,.05,bottleMat,-.14,.215,0));
+    g.add(cylAt(.05,.032,.035,celadonMat,-.02,.038,.09),cylAt(.05,.032,.035,celadonMat,-.02,.038,-.09));
+    g.add(cylAt(.07,.055,.03,celadonMat,.13,.035,-.075),cylAt(.052,.052,.02,kimchiMat,.13,.058,-.075));
+    g.add(cylAt(.07,.055,.03,celadonMat,.13,.035,.075));for(const [bx,bz] of[[.105,.06],[.155,.06],[.13,.1]])g.add(boxAt(.04,.03,.03,riceCakeMat,bx,.062,bz));
+  }
   else if(d.type==='light'){
     const can=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,.26,14),lightBodyMat);can.name='fixture';g.add(can);
     const coneMat=new THREE.MeshBasicMaterial({color:0xffe2a0,transparent:true,opacity:.16,depthWrite:false,side:THREE.DoubleSide});
@@ -1007,7 +1056,7 @@ function buildDummy(d){
     const spot=new THREE.SpotLight(0xffe6b8,d.intensity,0,Math.PI/8,.35,0);spot.name='spot';g.add(spot,spot.target);
   }
   else{
-    const sit=d.type==='sitting'||d.type==='clap';
+    const sit=d.type==='sitting'||d.type==='clap'||d.type==='cheers';
     const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.19,sit?.4:.52,6,14),dummyMat);torso.position.y=sit?.84:1.12;
     const head=new THREE.Mesh(new THREE.SphereGeometry(.12,16,12),dummyMat);head.position.y=sit?1.3:1.62;
     const nose=new THREE.Mesh(new THREE.BoxGeometry(.05,.05,.09),dummyMat);nose.position.set(0,head.position.y,.12);
@@ -1019,13 +1068,18 @@ function buildDummy(d){
       g.add(limb([.25,1.42,0],[.3,1.16,.14],.055,dummyMat),limb([.3,1.16,.14],[.11,1.42,.2],.05,dummyMat),sphereAt(.055,dummyMat,.11,1.42,.2));
       g.add(limb([.11,1.4,.2],[.075,1.52,.17],.022,micMat),sphereAt(.045,micHeadMat,.068,1.555,.165));
     }
+    if(d.type==='cheers'){ // 오른손으로 잔을 앞으로 내밀고, 왼손은 상 위에 둠
+      g.add(limb([.22,1.1,0],[.2,.93,.24],.05,dummyMat),limb([.2,.93,.24],[0,1.0,.46],.045,dummyMat),sphereAt(.05,dummyMat,0,1.0,.47));
+      g.add(cylAt(.055,.035,.045,celadonMat,0,1.04,.5));
+      g.add(limb([-.22,1.1,0],[-.24,.88,.14],.05,dummyMat),limb([-.24,.88,.14],[-.14,.78,.32],.045,dummyMat),sphereAt(.05,dummyMat,-.14,.78,.33));
+    }
     if(d.type==='clap'){ // 두 손을 가슴 앞에 모음
       for(const s of[-1,1])g.add(limb([s*.22,1.1,0],[s*.24,.86,.13],.05,dummyMat),limb([s*.24,.86,.13],[s*.035,.99,.25],.045,dummyMat),sphereAt(.055,dummyMat,s*.03,.99,.26));
     }
   }
   g.traverse(o=>{if(o.isMesh&&!o.userData.previsGuide){o.castShadow=true;o.receiveShadow=true}});
   g.position.set(d.x,0,d.z);g.rotation.y=d.type==='light'?0:d.rot*Math.PI/180;scene.add(g);
-  const ty=d.type==='stage'||d.type==='light'?d.h:DUMMY_TARGET_Y[d.type]??1.5;
+  const ty=['stage','light','counter','lantern'].includes(d.type)?d.h:DUMMY_TARGET_Y[d.type]??1.5;
   register(d.name,g,ty);g.userData.targetPoint=()=>new THREE.Vector3(g.position.x,g.position.y+ty,g.position.z);
   d.obj=g;if(d.type==='light')updateLight(d);return g;
 }
@@ -1035,6 +1089,9 @@ function addDummy(type,x,z,opts={}){
   const base=DUMMY_BASE[type]||'인물';let name=opts.name||`${base} ${dummyCounter++}`;while(objectsByName.has(name))name+='′';
   const d={id:crypto.randomUUID(),type,name,x,z,rot:opts.rot??180};
   if(type==='stage')Object.assign(d,{w:+opts.w||4,depth:+opts.depth||2.5,h:+opts.h||.6});
+  if(type==='counter')Object.assign(d,{w:+opts.w||2,depth:+opts.depth||.6,h:+opts.h||1});
+  if(type==='shelf')Object.assign(d,{w:+opts.w||1.2});
+  if(type==='lantern')Object.assign(d,{h:+opts.h||1.9,intensity:opts.intensity??6});
   if(type==='light')Object.assign(d,{h:+opts.h||3.5,tilt:opts.tilt??45,spread:opts.spread??30,intensity:opts.intensity??3,aim:opts.aim??(dummies.find(s=>s.type==='singer')?.name||'')});
   buildDummy(d);dummies.push(d);refreshDummyLayout();renderDummyList();renderNodes();scheduleAnalysis();return d;
 }
@@ -1046,9 +1103,15 @@ function groundAt(x,z){
   for(const s of dummies){if(s.type!=='stage')continue;const r=deg(s.rot),dx=x-s.x,dz=z-s.z,lx=dx*Math.cos(r)-dz*Math.sin(r),lz=dx*Math.sin(r)+dz*Math.cos(r);if(Math.abs(lx)<=s.w/2&&Math.abs(lz)<=s.depth/2)y=Math.max(y,s.h)}
   return y;
 }
+// 책상·카운터 위에 있으면 상판 높이를 돌려줌 (가구 회전 고려)
+function surfaceAt(x,z){
+  let y=0;
+  for(const s of dummies){const hw=s.type==='desk'?.6:s.type==='counter'?s.w/2:0,hd=s.type==='desk'?.3:s.type==='counter'?s.depth/2:0;if(!hw)continue;const r=deg(s.rot),dx=x-s.x,dz=z-s.z,lx=dx*Math.cos(r)-dz*Math.sin(r),lz=dx*Math.sin(r)+dz*Math.cos(r);if(Math.abs(lx)<=hw&&Math.abs(lz)<=hd)y=Math.max(y,s.type==='desk'?DESK_H:s.h)}
+  return y;
+}
 // 무대 단 높이 반영 + 무대등 조준 갱신
 function refreshDummyLayout(){
-  dummies.forEach(d=>{if(d.type==='stage'||d.type==='light')return;const y=groundAt(d.x,d.z);if(Math.abs(d.obj.position.y-y)>1e-4){d.obj.position.y=y;retargetFollowers(d)}});
+  dummies.forEach(d=>{if(FIXED_Y_TYPES.includes(d.type))return;const y=groundAt(d.x,d.z)+(d.type==='setmenu'?surfaceAt(d.x,d.z):0);if(Math.abs(d.obj.position.y-y)>1e-4){d.obj.position.y=y;retargetFollowers(d)}});
   dummies.forEach(d=>{if(d.type==='light')updateLight(d)});
 }
 function lightAimPoint(d){const s=d.aim&&dummies.find(x=>x.type==='singer'&&x.name===d.aim);return s?s.obj.position.clone().add(new THREE.Vector3(0,1.35,0)):null}
@@ -1069,7 +1132,9 @@ function updateLight(d){
   const row=document.querySelector(`.dummyItem[data-id="${d.id}"]`);if(row){row.querySelector('.dRot').value=d.rot;row.querySelector('.dTilt').value=d.tilt}
 }
 function extraDummyHtml(d){
-  if(d.type==='stage')return `<div class="dExtra"><label>가로 m</label><input type="number" class="dW" min="0.5" max="14" step="0.1" value="${d.w}"><label>세로 m</label><input type="number" class="dD" min="0.5" max="20" step="0.1" value="${d.depth}"><label>높이 m</label><input type="number" class="dH" min="0.05" max="2" step="0.05" value="${d.h}"></div>`;
+  if(d.type==='shelf')return `<div class="dExtra"><label>폭 m</label><input type="number" class="dSW" min="0.4" max="8" step="0.1" value="${d.w}"></div>`;
+  if(d.type==='lantern')return `<div class="dExtra"><label>높이 m</label><input type="number" class="dNH" min="0.8" max="6" step="0.05" value="${d.h}"><label>밝기</label><input type="range" class="dNI" min="0" max="20" step="0.5" value="${d.intensity}"></div>`;
+  if(SIZED_TYPES.includes(d.type))return `<div class="dExtra"><label>가로 m</label><input type="number" class="dW" min="0.5" max="14" step="0.1" value="${d.w}"><label>세로 m</label><input type="number" class="dD" min="0.5" max="20" step="0.1" value="${d.depth}"><label>높이 m</label><input type="number" class="dH" min="0.05" max="2" step="0.05" value="${d.h}"></div>`;
   if(d.type==='light'){
     const singers=dummies.filter(s=>s.type==='singer');
     return `<div class="dExtra"><label>조준</label><select class="dAim"><option value="">직접 방향</option>${singers.map(s=>`<option value="${esc(s.name)}" ${d.aim===s.name?'selected':''}>${esc(s.name)} 향하기</option>`).join('')}</select><label>높이 m</label><input type="number" class="dLH" min="0.5" max="8" step="0.1" value="${d.h}"><label>아래 각도</label><input type="range" class="dTilt" min="0" max="90" step="1" value="${d.tilt}" ${d.aim?'disabled':''} title="0°=수평, 90°=바로 아래"><label>퍼짐 각</label><input type="range" class="dSpread" min="5" max="100" step="1" value="${d.spread}" title="빛이 퍼지는 각도"><label>밝기</label><input type="range" class="dInt" min="0" max="10" step="0.1" value="${d.intensity}"></div>`;
@@ -1083,9 +1148,14 @@ function renderDummyList(){
     const label=DUMMY_LABEL[d.type]||d.type,aud=isAudience(d),light=d.type==='light';
     r.innerHTML=`<input type="text" class="dName" value="${esc(d.name)}"><span class="small">${aud?`<label class="dSelL" title="체크한 관객을 한 번에 무대 쪽으로 돌립니다"><input type="checkbox" class="dSel" ${d.sel?'checked':''}>${label}</label>`:label}</span><input type="range" class="dRot" min="0" max="359" step="1" value="${d.rot}" title="${light?'비추는 방향 (좌우)':'바라보는 방향'}" ${light&&d.aim?'disabled':''}>${extraDummyHtml(d)}<button class="dMove">이동</button><button class="dDel danger">삭제</button>`;
     r.querySelector('.dName').onchange=e=>{const nv=e.target.value.trim();if(!nv||objectsByName.has(nv)){e.target.value=d.name;return}objectsByName.delete(d.name);objectsByName.set(nv,d.obj);d.obj.userData.objectName=nv;d.obj.userData.chip.textContent=nv;nodes.forEach(n=>{if(n.targetName===d.name)n.targetName=nv});dummies.forEach(l=>{if(l.type==='light'&&l.aim===d.name)l.aim=nv});d.name=nv;renderDummyList();renderNodes();scheduleAnalysis()};
-    r.querySelector('.dRot').oninput=e=>{d.rot=+e.target.value;if(light){updateLight(d);return}d.obj.rotation.y=d.rot*Math.PI/180;if(d.type==='stage'){refreshDummyLayout();scheduleAnalysis()}};
+    r.querySelector('.dRot').oninput=e=>{d.rot=+e.target.value;if(light){updateLight(d);return}d.obj.rotation.y=d.rot*Math.PI/180;if(['stage','desk','counter'].includes(d.type)){refreshDummyLayout();scheduleAnalysis()}};
     r.querySelector('.dSel')?.addEventListener('change',e=>{d.sel=e.target.checked});
-    if(d.type==='stage'){
+    if(d.type==='shelf')r.querySelector('.dSW').onchange=e=>{d.w=clamp(+e.target.value||d.w,.4,8);e.target.value=d.w;rebuildDummy(d);scheduleAnalysis();status.textContent=`${d.name} · 폭 ${d.w}m`};
+    if(d.type==='lantern'){
+      r.querySelector('.dNH').onchange=e=>{d.h=clamp(+e.target.value||d.h,.8,6);e.target.value=d.h;rebuildDummy(d);retargetFollowers(d);scheduleAnalysis()};
+      r.querySelector('.dNI').oninput=e=>{d.intensity=+e.target.value;d.obj.getObjectByName('glow').intensity=d.intensity};
+    }
+    if(SIZED_TYPES.includes(d.type)){
       const onSize=()=>{d.w=clamp(+r.querySelector('.dW').value||d.w,.5,14);d.depth=clamp(+r.querySelector('.dD').value||d.depth,.5,20);d.h=clamp(+r.querySelector('.dH').value||d.h,.05,2);rebuildDummy(d);refreshDummyLayout();retargetFollowers(d);scheduleAnalysis();status.textContent=`${d.name} · ${d.w}×${d.depth}m · 높이 ${d.h}m`};
       ['.dW','.dD','.dH'].forEach(s=>r.querySelector(s).onchange=onSize);
     }
@@ -1122,6 +1192,15 @@ const walls=[];let wallCounter=1;
 const wallGroup=new THREE.Group();scene.add(wallGroup);
 const wallDraftGroup=new THREE.Group();wallDraftGroup.userData.previsGuide=true;scene.add(wallDraftGroup);
 const wallMat=new THREE.MeshStandardMaterial({color:0xe8e2d8,roughness:.95,transparent:true,opacity:1});
+// 천장: 벽 전체를 덮는 판. 아랫면만 그려져 위에서 내려다보는 편집 화면은 가리지 않음
+const ceilingMat=new THREE.MeshStandardMaterial({color:0xe8e2d8,roughness:.95,side:THREE.FrontSide});
+const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(1,1),ceilingMat);ceiling.rotation.x=Math.PI/2;ceiling.userData.noSolid=true;ceiling.raycast=()=>{};ceiling.receiveShadow=true;ceiling.visible=false;scene.add(ceiling);
+function updateCeiling(){
+  const pts=walls.flatMap(w=>w.pts);
+  if(!$('#ceilingOn').checked||pts.length<3){ceiling.visible=false;return}
+  const xs=pts.map(p=>p[0]),zs=pts.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);
+  ceiling.scale.set(x1-x0+.3,z1-z0+.3,1);ceiling.position.set((x0+x1)/2,Math.max(...walls.map(w=>w.h)),(z0+z1)/2);ceiling.visible=true;
+}
 const OPENING_DEFAULT={door:{width:.9,sill:0,top:2.1},window:{width:1.2,sill:.9,top:2.1}};
 const wallDraft={pts:[],hover:null};
 function wallSegCount(w){return w.closed?w.pts.length:w.pts.length-1}
@@ -1341,20 +1420,21 @@ async function exportFlowPackage(){
     zip.file('SHOTLIST.md',shotlistMd(an));zip.file('README_Flow_제작순서.md',readmeMd(an));
     zip.file('shotlist.json',JSON.stringify({project:projectData(),shots:an.shots.map(r=>({shot:r.i+1,start:r.start,end:r.end,flowLength:r.flowLen,camera:r.term,cameraKo:r.mv.ko,lensStart:Math.round(r.A.lens),lensEnd:Math.round(r.B.lens),angle:r.mv.angle,subject:r.subjEn,risk:r.risk,issues:r.issues,startFrame:`K${pad2(r.i)}`,endFrame:`K${pad2(r.i+1)}`,promptVideo:r.promptVideo,promptKeyframe:r.promptKey}))},null,2));
     status.textContent='ZIP 압축 중…';pauseRender=true;
-    const out=await zip.generateAsync({type:'blob'});pauseRender=false;downloadBlob(out,`cafe_flow_shot_package_${an.shots.length}shots_${w}x${h}.zip`);
+    const out=await zip.generateAsync({type:'blob'});pauseRender=false;downloadBlob(out,`${SPACE.prefix}_flow_shot_package_${an.shots.length}shots_${w}x${h}.zip`);
     status.textContent=`Flow 샷 패키지 저장 완료 · 샷 ${an.shots.length}개 · 키프레임 ${b.length}장`;
   }catch(err){console.error(err);alert('패키지 만들기 실패: '+(err?.message||err));status.textContent='패키지 만들기 실패'}
   finally{pauseRender=false;currentTime=oldTime;shotCamera.position.copy(oldPos);shotControls.target.copy(oldTarget);setCamLens(oldLens);updateClock();btns.forEach(x=>x.disabled=false)}
 }
 
 // ---------- 저장 / 불러오기 ----------
-function projectData(){return{version:'3.0-cafe',duration:duration(),aspect:+$('#aspect').value,easing:easingMode(),clipLength:clipLen(),shotCuts:boundaries().slice(1,-1),shotMeta:shotMeta.map(m=>({...m})),scene:sceneText(),
+function projectData(){return{version:'3.0-cafe',space:{...SPACE},look:{...LOOK},ceiling:$('#ceilingOn').checked,duration:duration(),aspect:+$('#aspect').value,easing:easingMode(),clipLength:clipLen(),shotCuts:boundaries().slice(1,-1),shotMeta:shotMeta.map(m=>({...m})),scene:sceneText(),
   plan:{...planCfg},planImage:planDataUrl!==PLAN_DATA_URL?planDataUrl:null,refImage:($('#refImg').src||'').startsWith('data:')?$('#refImg').src:null,
   walls:walls.map(w=>({name:w.name,h:w.h,thick:w.thick,closed:w.closed,pts:w.pts.map(p=>[+p[0].toFixed(3),+p[1].toFixed(3)]),openings:w.openings.map(o=>({...o}))})),
-  dummies:dummies.map(d=>({type:d.type,name:d.name,x:+d.x.toFixed(3),z:+d.z.toFixed(3),rot:d.rot,...(d.type==='stage'?{w:d.w,depth:d.depth,h:d.h}:d.type==='light'?{h:d.h,tilt:d.tilt,spread:d.spread,intensity:d.intensity,aim:d.aim}:{})})),
+  dummies:dummies.map(d=>({type:d.type,name:d.name,x:+d.x.toFixed(3),z:+d.z.toFixed(3),rot:d.rot,...(SIZED_TYPES.includes(d.type)?{w:d.w,depth:d.depth,h:d.h}:d.type==='shelf'?{w:d.w}:d.type==='lantern'?{h:d.h,intensity:d.intensity}:d.type==='light'?{h:d.h,tilt:d.tilt,spread:d.spread,intensity:d.intensity,aim:d.aim}:{})})),
   nodes:sorted().map(n=>({name:n.name,time:n.time,hold:n.hold,position:n.position.toArray(),target:n.target.toArray(),targetName:n.targetName,targetOffset:n.targetOffset||0,aimMode:n.aimMode||'look',pan:n.pan??0,tilt:n.tilt??0,lens:n.lens,fov:+fovFromLens(n.lens,16/9).toFixed(3)}))}}
 function loadData(d){
   const legacy=!String(d.version||'').startsWith('3');
+  Object.assign(SPACE,SPACE_DEFAULT,d.space||{});applySpace();applyLook(d.look);$('#ceilingOn').checked=!!d.ceiling;
   dummies.slice().forEach(removeDummy);
   nodes.length=0;counter=1;$('#duration').value=d.duration||40;$('#timeSlider').max=duration();$('#aspect').value=String(d.aspect||0.5625);
   $('#easing').value=({smooth:'node',linear:'linear'})[d.easing]||(['global','shot','node','linear'].includes(d.easing)?d.easing:'global');
@@ -1375,9 +1455,27 @@ function loadData(d){
   refreshSplitPreview();scheduleAnalysis();
   if(legacy)status.textContent='v2 프로젝트를 불러왔습니다. 화면 구도는 그대로 두고 렌즈 표기를 실제 mm 값으로 교정했습니다.';
 }
-function shotPackage(){const an=runAnalysis();const d=projectData();d.flowShots=an.shots.map(r=>({shot:r.i+1,start:r.start,end:r.end,flowLength:r.flowLen,camera:r.term,risk:r.risk,promptVideo:r.promptVideo,promptKeyframe:r.promptKey}));saveJson('cafe_shot_package.json',d)}
+function shotPackage(){const an=runAnalysis();const d=projectData();d.flowShots=an.shots.map(r=>({shot:r.i+1,start:r.start,end:r.end,flowLength:r.flowLen,camera:r.term,risk:r.risk,promptVideo:r.promptVideo,promptKeyframe:r.promptKey}));saveJson(`${SPACE.prefix}_shot_package.json`,d)}
 function setPlanImage(url){planDataUrl=url;planVisible=true;planPlane.visible=true;new THREE.TextureLoader().load(url,t=>{t.colorSpace=THREE.SRGBColorSpace;planMat.map=t;planMat.needsUpdate=true})}
 function readAsDataURL(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)})}
+
+// ---------- 공간 배치 (spaces/index.json에 적힌 배치를 머리말 목록과 ?space= 주소로 엶) ----------
+async function initSpaces(){
+  const sel=$('#spacePreset'),want=new URLSearchParams(location.search).get('space')||'';
+  let list=[];
+  try{const r=await fetch('spaces/index.json',{cache:'no-cache'});if(r.ok)list=await r.json()}catch(_){}
+  list.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent='공간: '+x.name;sel.appendChild(o)});
+  sel.onchange=()=>{
+    if(!confirm('다른 공간을 엽니다. 지금 화면에서 저장하지 않은 변경은 사라집니다.')){sel.value=want;return}
+    const u=new URL(location.href);if(sel.value)u.searchParams.set('space',sel.value);else u.searchParams.delete('space');location.href=u.toString();
+  };
+  if(!want)return;
+  const x=list.find(y=>y.id===want);
+  if(!x){status.textContent=`공간 '${want}' 배치를 찾지 못했습니다. spaces 폴더의 JSON 파일을 "불러오기"로 직접 열 수 있습니다.`;return}
+  sel.value=want;
+  try{const r=await fetch('spaces/'+x.file,{cache:'no-cache'});if(!r.ok)throw new Error('HTTP '+r.status);loadData(await r.json());gotoTime(0);runAnalysis();status.textContent=`${x.name} 배치를 불러왔습니다 · ▶ 재생으로 동선을 확인하세요.`}
+  catch(err){console.error(err);status.textContent=`${x.name} 배치를 불러오지 못했습니다 (${err.message}).`}
+}
 
 // ---------- 바인딩 ----------
 function initV3(){
@@ -1399,10 +1497,11 @@ function initV3(){
   $('#refFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('#refImg').src=await readAsDataURL(f);$('#refImg').style.display='block';$('#refEmpty').style.display='none';e.target.value=''};
   // 더미
   $('#addPersonStand').onclick=()=>{pendingDummy='standing';setTool('dummy')};$('#addPersonSit').onclick=()=>{pendingDummy='sitting';setTool('dummy')};$('#addPropBox').onclick=()=>{pendingDummy='box';setTool('dummy')};
-  Object.entries({addSinger:'singer',addClapper:'clap',addStage:'stage',addDesk:'desk',addChair:'chair',addLight:'light'}).forEach(([id,t])=>$('#'+id).onclick=()=>{pendingDummy=t;setTool('dummy');status.textContent=`바닥을 클릭하면 ${DUMMY_LABEL[t]} 배치`});
+  Object.entries({addSinger:'singer',addClapper:'clap',addStage:'stage',addDesk:'desk',addChair:'chair',addLight:'light',addCheers:'cheers',addShelf:'shelf',addCounter:'counter',addLantern:'lantern',addSetmenu:'setmenu'}).forEach(([id,t])=>$('#'+id).onclick=()=>{pendingDummy=t;setTool('dummy');status.textContent=`바닥을 클릭하면 ${DUMMY_LABEL[t]} 배치`});
   $('#drawWall').onclick=()=>{if(tool==='wall'){setTool('free');return}setTool('wall');status.textContent='도면 위에서 벽의 첫 점을 클릭하세요.'};
   $('#finishWall').onclick=()=>{if(tool==='wall')setTool('free');else status.textContent='먼저 "벽 그리기"를 누르세요.'};
   $('#addDoor').onclick=()=>setTool(tool==='door'?'free':'door');$('#addWindow').onclick=()=>setTool(tool==='window'?'free':'window');
+  $('#ceilingOn').onchange=scheduleAnalysis;
   $('#selectAudience').onclick=toggleAudienceSelection;$('#faceStage').onclick=faceAudienceToStage;
   $('#playBtn').onclick=()=>{if(currentTime>=duration()-.01)currentTime=0;playUntil=null;lastFrameMs=performance.now();isPlaying=true;setMainMode('free')};
   applyPlanCfg(); planVisible=false; planGroup.visible=false;
@@ -1414,7 +1513,7 @@ const seeds=[
   {p:[4.2,1.5,5.0],t:[0,1.2,0],time:12.0,lens:35},
   {p:[0,1.45,3.2],t:[0,1.2,-1.5],time:24.0,lens:35}
 ];
-seeds.forEach((s,i)=>{const n=newNode(new THREE.Vector3().fromArray(s.p),new THREE.Vector3().fromArray(s.t),s.time);n.name=`C${i+1}`;n.targetName='직접 지정';n.lens=s.lens;n.fov=fovFromLens(s.lens);n.hold=0;nodes.push(n)});counter=seeds.length+1;selectedId=nodes[0].id;$('#duration').value=24;$('#aspect').value='0.5625';$('#videoResolution').value='1080x1920';$('#shotResolution').value='1080x1920';$('#videoFps').value='30';$('#shotInterval').value=4;rebuildHelpers();renderNodes();selectNode(selectedId);$('#timeSlider').max=duration();updateAspect();resize();refreshSplitPreview();initV3();$('#clipLen').value='8';autoShots();gotoTime(0);runAnalysis();status.textContent='카페 프리비즈 준비 완료 · "카페 도면 불러오기"로 도면을 깔고 더미를 배치하세요.';lastFrameMs=performance.now();loop(lastFrameMs);
+seeds.forEach((s,i)=>{const n=newNode(new THREE.Vector3().fromArray(s.p),new THREE.Vector3().fromArray(s.t),s.time);n.name=`C${i+1}`;n.targetName='직접 지정';n.lens=s.lens;n.fov=fovFromLens(s.lens);n.hold=0;nodes.push(n)});counter=seeds.length+1;selectedId=nodes[0].id;$('#duration').value=24;$('#aspect').value='0.5625';$('#videoResolution').value='1080x1920';$('#shotResolution').value='1080x1920';$('#videoFps').value='30';$('#shotInterval').value=4;rebuildHelpers();renderNodes();selectNode(selectedId);$('#timeSlider').max=duration();updateAspect();resize();refreshSplitPreview();initV3();$('#clipLen').value='8';autoShots();gotoTime(0);runAnalysis();status.textContent='카페 프리비즈 준비 완료 · "카페 도면 불러오기"로 도면을 깔고 더미를 배치하세요.';lastFrameMs=performance.now();loop(lastFrameMs);initSpaces();
 </script>
 </body>
 </html>
