@@ -4,6 +4,7 @@
 
 - 여는 주소: `cafe_previs.html?space=dalbit` (머리말의 "공간" 목록에서도 고를 수 있습니다)
 - `index.json`: 목록에 보일 공간. `id`는 주소에 쓰는 이름, `file`은 이 폴더 안의 배치 파일
+- `royal_banquet.json`: 궁중 연회장 (12×18m, 천장 7m, 30초 5샷 동선). 여는 주소는 `cafe_previs.html?space=banquet`. 마찬가지로 `builtinSpaces`에도 들어 있습니다.
 - `dalbit_pungryu.json`: 달빛풍류 주막 (5×7m, 30초 5샷 동선). 같은 내용이 `cafe_previs.html` 안(`builtinSpaces`)에도 들어 있어, 툴은 그쪽을 먼저 씁니다. 배치를 고치면 두 곳을 함께 바꿉니다.
 
 ## 새 공간 추가 (예: 화음스튜디오)

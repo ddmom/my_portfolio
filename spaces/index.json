@@ -1,3 +1,4 @@
 [
-  { "id": "dalbit", "name": "달빛풍류 주막", "file": "dalbit_pungryu.json" }
+  {"id": "dalbit", "name": "달빛풍류 주막", "file": "dalbit_pungryu.json"},
+  {"id": "banquet", "name": "궁중 연회장", "file": "royal_banquet.json"}
 ]
