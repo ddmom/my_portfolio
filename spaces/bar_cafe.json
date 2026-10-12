@@ -7,7 +7,7 @@
   "prefix": "bar_cafe",
   "place": "bright modern cafe interior",
   "ambient": "Gentle ambient life: soft daylight shifts across the floor, the pendant lights glow steadily and thin steam rises from a coffee cup",
-  "continuity": "the walls, tall windows, door, bar counter, hanging shelf, pendant lights, stools, round tables, chairs, people and lighting"
+  "continuity": "the walls, tall windows, entrance door, back door, espresso machine, back counter, bar counter, hanging shelf, pendant lights, stools, round tables, chairs, people and lighting"
  },
  "look": {
   "wall": "#f2efe8",
@@ -30,32 +30,32 @@
  "shotMeta": [
   {
    "move": "Slow push-in",
-   "subject": "the bright cafe interior with the dark wood bar counter, white bar stools and three black pendant lights",
-   "action": "The camera glides slowly toward the bar while soft daylight streams in through the tall windows. The pendant lights glow steadily and nothing else moves."
+   "subject": "the cafe entrance seen from outside, with the bar and the barista visible through the open glass door",
+   "action": "The camera glides forward from the street through the open glass entrance door into the bright cafe. Soft daylight fills the room and the pendant lights glow steadily."
   },
   {
-   "move": "",
-   "subject": "the barista behind the dark wood bar counter, under the hanging shelf",
-   "action": "The barista behind the counter slowly pours milk into a coffee cup. Warm light from the pendants glints on the counter top."
+   "move": "Slow dolly in",
+   "subject": "the dark wood bar counter with the white stools and the barista behind it",
+   "action": "The camera walks slowly past the round tables toward the bar. The barista behind the counter looks up and gives a small welcoming smile."
   },
   {
-   "move": "Truck left",
-   "subject": "the bar counter with the white stools and the row of black pendant lights",
-   "action": "The barista sets the finished cup on the counter. The pendant lights glow steadily and the empty stools stay still."
+   "move": "Slow push-in",
+   "subject": "the barista standing behind the bar counter, with the espresso machine on the back counter behind",
+   "action": "The camera moves closer to the barista, who stands calmly behind the counter wiping a cup with a cloth."
   },
   {
-   "move": "",
-   "subject": "the cafe seen from the window side, with the guest at the round table and the bar beyond",
-   "action": "The guest at the round table lifts a coffee cup and takes a slow sip. Daylight from the windows falls softly across the floor."
+   "move": "Truck right",
+   "subject": "the barista and the chrome espresso machine on the back counter behind them",
+   "action": "The camera slides gently to the right, revealing the espresso machine on the back counter beside the barista. The barista stays calmly in place."
   },
   {
-   "move": "Slow pull-back rising",
-   "subject": "the whole cafe seen from the window corner",
-   "action": "The camera drifts back and up to reveal the whole cafe. The guest sits quietly at the table while the barista works behind the bar."
+   "move": "Slow push-in",
+   "subject": "the chrome espresso machine on the back counter",
+   "action": "Espresso pours slowly from the machine's spout into a white cup while a thin wisp of steam rises. The barista stands still at the edge of the frame."
   }
  ],
  "scene": {
-  "desc": "A small, bright modern cafe in daytime. Soft white walls and ceiling, a warm cream-yellow floor, and three tall floor-to-ceiling windows with a brown wooden header along the left wall. An L-shaped dark brown wooden bar counter with a light cream base stripe sits in the middle, with a two-layer beige wooden shelf hanging from the ceiling above it and three black cylindrical pendant lights. Three white round-seat bar stools with chrome legs line the front of the bar. Two white round tables on chrome pedestals with dark brown wooden chairs stand by the windows, and a dark brown double door is set in the back wall to the right of the bar.",
+  "desc": "A small, bright modern cafe in daytime. Soft white walls and ceiling, a warm cream-yellow floor, and three tall floor-to-ceiling windows with a brown wooden header along the left wall. An L-shaped dark brown wooden bar counter with a light cream base stripe sits in the middle, with a two-layer beige wooden shelf hanging from the ceiling above it and three black cylindrical pendant lights. Three white round-seat bar stools with chrome legs line the front of the bar. Two white round tables on chrome pedestals with dark brown wooden chairs stand by the windows, and a dark brown double door is set in the back wall to the right of the bar. Behind the bar, a low back counter holds a chrome two-group espresso machine and a coffee grinder. The street entrance is a wide glass door in the front wall.",
   "style": "Clean, bright, minimal cafe look in a warm neutral palette of white, cream and dark walnut brown. Soft natural daylight from the windows plus warm 3000K pendant light over the bar, gentle shadows, realistic materials, shallow depth of field, consistent interior design and lighting across every shot.",
   "avoid": "No extra people beyond those in the frame, no layout or furniture changes, no objects teleporting, no warped hands or faces, no neon signs, no night lighting, no text, logos or subtitles inside the generated scene."
  },
@@ -124,6 +124,14 @@
      "width": 1.1,
      "sill": 0,
      "top": 2.2
+    },
+    {
+     "kind": "door",
+     "seg": 0,
+     "s": 6.6,
+     "width": 1.4,
+     "sill": 0,
+     "top": 2.4
     }
    ]
   }
@@ -250,9 +258,26 @@
    "rot": 270
   },
   {
+   "type": "counter",
+   "name": "뒷카운터",
+   "x": 1.0,
+   "z": -2.05,
+   "rot": 0,
+   "w": 4.0,
+   "depth": 0.6,
+   "h": 0.92
+  },
+  {
+   "type": "espresso",
+   "name": "커피머신",
+   "x": 1.35,
+   "z": -2.05,
+   "rot": 0
+  },
+  {
    "type": "standing",
    "name": "바리스타",
-   "x": 1.0,
+   "x": 0.55,
    "z": -1.35,
    "rot": 0
   },
@@ -270,20 +295,20 @@
    "time": 0,
    "hold": 0,
    "position": [
-    3.3,
-    2.2,
-    3.0
+    2.6,
+    1.55,
+    5.6
    ],
    "target": [
-    0.6,
-    1.1,
-    -0.8
+    2.3,
+    1.35,
+    -1.0
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -35.4,
-   "tilt": -13.3,
+   "pan": -2.6,
+   "tilt": -1.7,
    "lens": 24
   },
   {
@@ -291,20 +316,20 @@
    "time": 6,
    "hold": 0,
    "position": [
-    2.3,
-    1.7,
-    1.9
+    2.6,
+    1.55,
+    2.4
    ],
    "target": [
     1.0,
-    1.2,
-    -0.8
+    1.35,
+    -1.2
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -25.7,
-   "tilt": -9.5,
+   "pan": -24.0,
+   "tilt": -2.9,
    "lens": 24
   },
   {
@@ -312,20 +337,20 @@
    "time": 12,
    "hold": 0,
    "position": [
-    1.6,
-    1.45,
-    1.15
+    1.5,
+    1.5,
+    1.3
    ],
    "target": [
-    1.0,
+    0.55,
     1.5,
     -1.35
    ],
    "targetName": "바리스타",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -13.5,
-   "tilt": 1.1,
+   "pan": -19.7,
+   "tilt": 0.0,
    "lens": 24
   },
   {
@@ -333,20 +358,20 @@
    "time": 20,
    "hold": 0,
    "position": [
-    -0.3,
+    0.75,
     1.45,
-    1.15
+    0.6
    ],
    "target": [
-    0.3,
-    1.4,
-    -1.0
+    0.55,
+    1.5,
+    -1.35
    ],
-   "targetName": "직접 지정",
+   "targetName": "바리스타",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": 15.6,
-   "tilt": -1.3,
+   "pan": -5.9,
+   "tilt": 1.5,
    "lens": 24
   },
   {
@@ -354,20 +379,20 @@
    "time": 26,
    "hold": 0,
    "position": [
-    -2.2,
-    1.7,
-    2.8
+    1.75,
+    1.45,
+    0.6
    ],
    "target": [
-    0.8,
-    1.1,
-    -0.8
+    1.0,
+    1.35,
+    -1.75
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": 39.8,
-   "tilt": -7.3,
+   "pan": -17.7,
+   "tilt": -2.3,
    "lens": 24
   },
   {
@@ -375,20 +400,20 @@
    "time": 30,
    "hold": 0,
    "position": [
-    -3.3,
-    2.2,
-    3.0
+    1.6,
+    1.38,
+    0.15
    ],
    "target": [
-    1.0,
-    1.0,
-    -0.8
+    1.35,
+    1.22,
+    -2.05
    ],
-   "targetName": "직접 지정",
+   "targetName": "커피머신",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": 48.5,
-   "tilt": -11.8,
+   "pan": -6.5,
+   "tilt": -4.1,
    "lens": 24
   }
  ]
