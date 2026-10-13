@@ -390,9 +390,9 @@
    "time": 26,
    "hold": 0,
    "position": [
-    -0.6,
-    1.55,
-    0.45
+    -0.75,
+    1.6,
+    1.15
    ],
    "target": [
     -1.4,
@@ -402,7 +402,7 @@
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -28.1,
+   "pan": -16.5,
    "tilt": -5.0,
    "lens": 24
   },
@@ -413,7 +413,7 @@
    "position": [
     -0.95,
     1.5,
-    0.05
+    0.3
    ],
    "target": [
     -1.35,
@@ -423,8 +423,8 @@
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -19.2,
-   "tilt": -4.7,
+   "pan": -15.9,
+   "tilt": -3.9,
    "lens": 24
   }
  ]
