@@ -18,7 +18,7 @@
   "sun": 0.5
  },
  "ceiling": true,
- "duration": 32,
+ "duration": 40,
  "aspect": 0.5625,
  "easing": "global",
  "clipLength": 6,
@@ -27,7 +27,9 @@
   10,
   16,
   22,
-  28
+  26,
+  30,
+  36
  ],
  "shotMeta": [
   {
@@ -43,22 +45,32 @@
   {
    "move": "",
    "subject": "the man seated at the counter, ordering from the barista across the counter",
-   "action": "The seated man looks up and speaks to order a coffee. The barista leans in slightly, listening with a gentle smile, and nods."
+   "action": "The seated man looks up and speaks to order an espresso. The barista leans in slightly, listening with a gentle smile, and nods."
   },
   {
-   "move": "Over-the-shoulder push-in",
-   "subject": "over the seated man's shoulder, the barista smiling as she takes his order",
-   "action": "The barista smiles at the man, then turns and steps over to the espresso machine at the end of the counter."
+   "move": "",
+   "subject": "the barista stepping over to the chrome espresso machine at the end of the counter",
+   "action": "The barista smiles, turns and walks to the espresso machine. She takes the portafilter from the group head and knocks out the old coffee grounds."
+  },
+  {
+   "move": "Truck left",
+   "subject": "the barista at the espresso machine grinding and tamping the coffee",
+   "action": "She holds the portafilter under the grinder and fresh ground coffee falls into it, then she presses the coffee flat with the tamper."
+  },
+  {
+   "move": "Arc left",
+   "subject": "the barista's hands at the espresso machine, seen from her side",
+   "action": "She locks the portafilter into the group head with a firm twist and sets a small white cup under the spouts."
   },
   {
    "move": "Slow push-in",
-   "subject": "the barista at the chrome espresso machine",
-   "action": "She locks the portafilter into the espresso machine and presses the button. Dark espresso begins to stream into a white cup and steam curls up in the warm light."
+   "subject": "close-up of dark espresso pouring from the machine's spouts into a small white cup",
+   "action": "She presses the button. Two thin streams of dark espresso with golden crema pour slowly into the white cup and soft steam rises in the warm light."
   },
   {
-   "move": "Slow pull-back",
-   "subject": "the barista smiling at the seated man while the espresso pours",
-   "action": "While the espresso finishes pouring, she lifts her eyes to the man and gives him a soft, shy smile. He smiles back from his stool."
+   "move": "Slow pull-back rising",
+   "subject": "the barista at the espresso machine turning toward the man seated at the counter",
+   "action": "While the espresso finishes pouring, she turns her head and gives the man a soft, shy smile. He smiles back from his stool, rain glittering in the window behind him."
   }
  ],
  "scene": {
@@ -133,9 +145,13 @@
   {
    "type": "espresso",
    "name": "커피머신",
-   "x": -1.95,
+   "x": -1.75,
    "z": -0.6,
-   "rot": 180
+   "rot": 180,
+   "pour": [
+    30,
+    35.5
+   ]
   },
   {
    "type": "counter",
@@ -234,7 +250,7 @@
    "rot": 0
   },
   {
-   "type": "standing",
+   "type": "barista",
    "name": "여주 바리스타",
    "x": -0.75,
    "z": -1.3,
@@ -271,28 +287,28 @@
      "rot": 6
     },
     {
-     "t": 17.5,
-     "x": -1.4,
-     "z": -1.35,
-     "rot": 340
+     "t": 18,
+     "x": -1.75,
+     "z": -1.3,
+     "rot": 0
     },
     {
-     "t": 23,
-     "x": -1.4,
-     "z": -1.35,
-     "rot": 340
+     "t": 33,
+     "x": -1.75,
+     "z": -1.3,
+     "rot": 0
     },
     {
-     "t": 25,
-     "x": -1.4,
-     "z": -1.35,
-     "rot": 30
+     "t": 35.5,
+     "x": -1.75,
+     "z": -1.3,
+     "rot": 38
     },
     {
-     "t": 32,
-     "x": -1.4,
-     "z": -1.35,
-     "rot": 30
+     "t": 40,
+     "x": -1.75,
+     "z": -1.3,
+     "rot": 38
     }
    ]
   },
@@ -341,7 +357,7 @@
    "rot": 180,
    "show": [
     7,
-    32
+    40
    ]
   }
  ],
@@ -435,62 +451,104 @@
    "time": 22,
    "hold": 0,
    "position": [
-    -1.0,
-    1.5,
-    0.6
+    -2.6,
+    1.6,
+    0.05
    ],
    "target": [
-    -1.65,
-    1.3,
+    -1.75,
+    1.25,
     -1.0
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -22.1,
-   "tilt": -6.6,
+   "pan": 39.0,
+   "tilt": -14.5,
+   "lens": 24
+  },
+  {
+   "name": "C5b",
+   "time": 26,
+   "hold": 0,
+   "position": [
+    -2.62,
+    1.52,
+    -0.75
+   ],
+   "target": [
+    -1.75,
+    1.2,
+    -0.95
+   ],
+   "targetName": "직접 지정",
+   "targetOffset": 0,
+   "aimMode": "look",
+   "pan": 77.1,
+   "tilt": -19.7,
    "lens": 24
   },
   {
    "name": "C6",
-   "time": 28,
+   "time": 30,
    "hold": 0,
    "position": [
-    -1.15,
-    1.42,
-    0.15
+    -2.5,
+    1.45,
+    -1.6
    ],
    "target": [
-    -1.6,
-    1.3,
-    -1.0
+    -1.75,
+    1.15,
+    -0.85
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -21.4,
-   "tilt": -5.6,
+   "pan": 135.0,
+   "tilt": -15.8,
    "lens": 24
   },
   {
    "name": "C7",
-   "time": 32,
+   "time": 36,
    "hold": 0,
    "position": [
-    0.5,
-    1.65,
-    1.1
+    -2.25,
+    1.32,
+    -1.55
    ],
    "target": [
-    -1.0,
-    1.3,
-    -0.7
+    -1.92,
+    1.22,
+    -0.88
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -39.8,
-   "tilt": -8.5,
+   "pan": 153.8,
+   "tilt": -7.6,
+   "lens": 24
+  },
+  {
+   "name": "C8",
+   "time": 40,
+   "hold": 0,
+   "position": [
+    -2.55,
+    1.65,
+    -1.75
+   ],
+   "target": [
+    -1.3,
+    1.3,
+    -0.5
+   ],
+   "targetName": "직접 지정",
+   "targetOffset": 0,
+   "aimMode": "look",
+   "pan": 135.0,
+   "tilt": -11.2,
    "lens": 24
   }
  ]
