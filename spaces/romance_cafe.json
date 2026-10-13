@@ -250,8 +250,67 @@
    "rot": 0
   },
   {
+   "type": "flowers",
+   "name": "문 옆 꽃",
+   "x": 2.75,
+   "z": 2.2,
+   "rot": 0
+  },
+  {
+   "type": "pendant",
+   "name": "테이블 펜던트",
+   "x": 2.3,
+   "z": 0.4,
+   "rot": 0,
+   "h": 1.95,
+   "intensity": 2.5
+  },
+  {
+   "type": "candles",
+   "name": "테이블 촛불",
+   "x": 2.2,
+   "z": 0.48,
+   "rot": 0
+  },
+  {
+   "type": "vase",
+   "name": "테이블 꽃병",
+   "x": 2.42,
+   "z": 0.3,
+   "rot": 0
+  },
+  {
+   "type": "candles",
+   "name": "카운터 촛불",
+   "x": 0.55,
+   "z": -0.6,
+   "rot": 0
+  },
+  {
+   "type": "vase",
+   "name": "카운터 꽃병",
+   "x": 0.2,
+   "z": -0.5,
+   "rot": 0
+  },
+  {
+   "type": "candles",
+   "name": "뒷카운터 촛불",
+   "x": -0.3,
+   "z": -2.15,
+   "rot": 0
+  },
+  {
+   "type": "vase",
+   "name": "뒷카운터 꽃병",
+   "x": 1.2,
+   "z": -2.15,
+   "rot": 0
+  },
+  {
    "type": "barista",
    "name": "여주 바리스타",
+   "role": "the female lead (the barista)",
    "x": -0.75,
    "z": -1.3,
    "rot": 0,
@@ -315,6 +374,7 @@
   {
    "type": "standing",
    "name": "남주 (걷기)",
+   "role": "the male lead",
    "x": 1.8,
    "z": 3.0,
    "rot": 180,
@@ -352,6 +412,7 @@
   {
    "type": "sitting",
    "name": "남주",
+   "role": "the male lead",
    "x": -0.6,
    "z": 0.15,
    "rot": 180,
@@ -393,15 +454,15 @@
     1.8
    ],
    "target": [
-    0.9,
-    1.2,
-    1.3
+    0.3,
+    1.25,
+    0.8
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": 80.2,
-   "tilt": -9.6,
+   "pan": 66.5,
+   "tilt": -10.2,
    "lens": 24
   },
   {
