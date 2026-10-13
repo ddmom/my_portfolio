@@ -6,7 +6,7 @@
 - `index.json`: 목록에 보일 공간. `id`는 주소에 쓰는 이름, `file`은 이 폴더 안의 배치 파일
 - `royal_banquet.json`: 궁중 연회장 (12×18m, 천장 7m, 30초 5샷 동선). 여는 주소는 `cafe_previs.html?space=banquet`. 마찬가지로 `builtinSpaces`에도 들어 있습니다.
 - `bar_cafe.json`: 바 카운터 카페 (8×7m, 천장 3.2m, 16:9 · 30초 5샷 동선: 입구 진입 → 바로 걸어감 → 바리스타에게 다가감 → 뒤 커피머신 드러냄 → 커피머신 클로즈업). 아이소메트릭 카페 레퍼런스 이미지(컨셉 참고에 들어 있음)를 실제 치수로 옮긴 배치입니다. 여는 주소는 `cafe_previs.html?space=bar_cafe`. `builtinSpaces`에도 들어 있습니다.
-- `romance_cafe.json`: 비 오는 밤 카페 (6×5m, 9:16 · 30초 5샷). 남주가 비 오는 거리에서 걸어 들어오고, 여주 바리스타가 그를 보며 미소 짓고 에스프레소를 내리는 장면. 두 인물은 '걷기 키'로 시간에 따라 움직입니다. 여는 주소는 `cafe_previs.html?space=romance_cafe`.
+- `romance_cafe.json`: 비 오는 밤 카페 (6×5m, 9:16 · 32초 6샷). 남주가 들어와 바 스툴에 앉아 주문하고, 여주 바리스타가 에스프레소를 내리며 그를 보고 미소 짓는 장면. 남주는 7초에 "걷는 남주"에서 "앉은 남주"로 바뀝니다(보이는 시간). 두 인물은 '걷기 키'로 시간에 따라 움직입니다. 여는 주소는 `cafe_previs.html?space=romance_cafe`.
 - `dalbit_pungryu.json`: 달빛풍류 주막 (5×7m, 30초 5샷 동선). 같은 내용이 `cafe_previs.html` 안(`builtinSpaces`)에도 들어 있어, 툴은 그쪽을 먼저 씁니다. 배치를 고치면 두 곳을 함께 바꿉니다.
 
 ## 새 공간 추가 (예: 화음스튜디오)

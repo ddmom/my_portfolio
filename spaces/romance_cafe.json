@@ -18,41 +18,47 @@
   "sun": 0.5
  },
  "ceiling": true,
- "duration": 30,
+ "duration": 32,
  "aspect": 0.5625,
  "easing": "global",
  "clipLength": 6,
  "shotCuts": [
-  6,
-  12,
-  20,
-  26
+  4,
+  10,
+  16,
+  22,
+  28
  ],
  "shotMeta": [
   {
-   "move": "Tracking shot from behind",
-   "subject": "the young man walking through the rain toward the glowing glass door of the small night cafe",
-   "action": "On the rainy night street, the man in the long charcoal coat walks slowly toward the cafe's glass door with his back to the camera. Warm light spills out of the big front window and raindrops glitter in the air."
+   "move": "Slow pan right",
+   "subject": "the glass door of the cafe, with the young man stepping in from the rainy street",
+   "action": "The man in the long charcoal coat pushes the glass door open and steps inside from the rain. Behind the counter, the barista looks up toward the door."
   },
   {
-   "move": "Slow dolly in",
-   "subject": "the man stepping in through the glass door, with the barista behind the counter in the warm cafe",
-   "action": "The man pushes the glass door open and steps inside, a few raindrops on his shoulders. Behind the counter, the barista with long wavy brown hair glances up from the espresso machine."
+   "move": "Slow pan right",
+   "subject": "the man walking to the counter and sitting down on a bar stool",
+   "action": "The man walks across the cafe to the counter, pulls out a bar stool and sits down facing the barista. Rain glitters past the front window."
+  },
+  {
+   "move": "",
+   "subject": "the man seated at the counter, ordering from the barista across the counter",
+   "action": "The seated man looks up and speaks to order a coffee. The barista leans in slightly, listening with a gentle smile, and nods."
   },
   {
    "move": "Over-the-shoulder push-in",
-   "subject": "over the man's shoulder, the barista behind the counter beside the espresso machine",
-   "action": "The man walks up to the counter and stops. The barista turns her eyes to him and a soft, shy smile spreads across her face."
+   "subject": "over the seated man's shoulder, the barista smiling as she takes his order",
+   "action": "The barista smiles at the man, then turns and steps over to the espresso machine at the end of the counter."
   },
   {
    "move": "Slow push-in",
-   "subject": "the barista smiling at the customer while pulling an espresso shot",
-   "action": "Still smiling at the man, she locks the portafilter into the espresso machine and presses the button. Dark espresso begins to stream into a white cup."
+   "subject": "the barista at the chrome espresso machine",
+   "action": "She locks the portafilter into the espresso machine and presses the button. Dark espresso begins to stream into a white cup and steam curls up in the warm light."
   },
   {
-   "move": "Slow push-in",
-   "subject": "close-up of the barista's gentle smile, with espresso pouring beside her",
-   "action": "Espresso pours slowly into the cup and steam rises in the warm candlelight while she keeps her gentle smile on the man. Her long hair sways very slightly."
+   "move": "Slow pull-back",
+   "subject": "the barista smiling at the seated man while the espresso pours",
+   "action": "While the espresso finishes pouring, she lifts her eyes to the man and gives him a soft, shy smile. He smiles back from his stool."
   }
  ],
  "scene": {
@@ -223,80 +229,119 @@
   {
    "type": "flowers",
    "name": "창가 꽃",
-   "x": -2.5,
-   "z": 1.9,
+   "x": -2.6,
+   "z": 0.9,
    "rot": 0
   },
   {
    "type": "standing",
    "name": "여주 바리스타",
-   "x": -1.05,
+   "x": -0.75,
    "z": -1.3,
    "rot": 0,
    "moves": [
     {
      "t": 0,
-     "x": -1.25,
+     "x": -0.75,
      "z": -1.3,
-     "rot": 330
+     "rot": 350
     },
     {
-     "t": 10,
-     "x": -1.25,
-     "z": -1.3,
-     "rot": 330
-    },
-    {
-     "t": 16,
-     "x": -1.05,
+     "t": 1.5,
+     "x": -0.75,
      "z": -1.3,
      "rot": 32
     },
     {
-     "t": 30,
-     "x": -1.05,
+     "t": 4,
+     "x": -0.75,
      "z": -1.3,
      "rot": 32
+    },
+    {
+     "t": 7,
+     "x": -0.75,
+     "z": -1.3,
+     "rot": 6
+    },
+    {
+     "t": 15,
+     "x": -0.75,
+     "z": -1.3,
+     "rot": 6
+    },
+    {
+     "t": 17.5,
+     "x": -1.4,
+     "z": -1.35,
+     "rot": 340
+    },
+    {
+     "t": 23,
+     "x": -1.4,
+     "z": -1.35,
+     "rot": 340
+    },
+    {
+     "t": 25,
+     "x": -1.4,
+     "z": -1.35,
+     "rot": 30
+    },
+    {
+     "t": 32,
+     "x": -1.4,
+     "z": -1.35,
+     "rot": 30
     }
    ]
   },
   {
    "type": "standing",
-   "name": "남주",
+   "name": "남주 (걷기)",
    "x": 1.8,
-   "z": 4.0,
+   "z": 3.0,
    "rot": 180,
+   "show": [
+    0,
+    7
+   ],
    "moves": [
     {
      "t": 0,
      "x": 1.8,
-     "z": 4.0,
+     "z": 3.0,
      "rot": 180
+    },
+    {
+     "t": 2.5,
+     "x": 1.8,
+     "z": 2.0,
+     "rot": 195
     },
     {
      "t": 6,
-     "x": 1.8,
-     "z": 2.1,
+     "x": -0.6,
+     "z": 0.55,
      "rot": 180
     },
     {
-     "t": 11,
-     "x": 0.8,
-     "z": 1.0,
-     "rot": 220
-    },
-    {
-     "t": 14,
-     "x": 0.15,
-     "z": 0.55,
-     "rot": 212
-    },
-    {
-     "t": 30,
-     "x": 0.15,
-     "z": 0.55,
-     "rot": 212
+     "t": 7,
+     "x": -0.6,
+     "z": 0.5,
+     "rot": 180
     }
+   ]
+  },
+  {
+   "type": "sitting",
+   "name": "남주",
+   "x": -0.6,
+   "z": 0.15,
+   "rot": 180,
+   "show": [
+    7,
+    32
    ]
   }
  ],
@@ -306,125 +351,146 @@
    "time": 0,
    "hold": 0,
    "position": [
-    2.7,
-    1.75,
-    6.0
+    -2.2,
+    1.7,
+    2.0
    ],
    "target": [
-    1.5,
-    1.35,
-    2.5
+    1.6,
+    1.3,
+    2.2
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -18.9,
-   "tilt": -6.2,
+   "pan": 93.0,
+   "tilt": -6.0,
    "lens": 24
   },
   {
    "name": "C2",
-   "time": 6,
+   "time": 4,
    "hold": 0,
    "position": [
-    2.4,
+    -2.0,
     1.7,
-    4.4
+    1.8
    ],
    "target": [
-    0.4,
-    1.3,
-    0.3
+    0.9,
+    1.2,
+    1.3
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -26.0,
-   "tilt": -5.0,
+   "pan": 80.2,
+   "tilt": -9.6,
    "lens": 24
   },
   {
    "name": "C3",
-   "time": 12,
+   "time": 10,
    "hold": 0,
    "position": [
-    1.85,
-    1.6,
-    2.15
+    -2.1,
+    1.55,
+    1.2
    ],
    "target": [
-    -1.05,
-    1.5,
-    -1.3
+    -0.7,
+    1.1,
+    -0.2
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -40.0,
-   "tilt": -1.3,
+   "pan": 45.0,
+   "tilt": -12.8,
    "lens": 24
   },
   {
    "name": "C4",
-   "time": 20,
+   "time": 16,
    "hold": 0,
    "position": [
-    1.1,
-    1.65,
-    1.1
+    0.15,
+    1.5,
+    1.0
    ],
    "target": [
-    -1.05,
+    -0.75,
     1.5,
     -1.3
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -41.9,
-   "tilt": -2.7,
+   "pan": -21.4,
+   "tilt": 0.0,
    "lens": 24
   },
   {
    "name": "C5",
-   "time": 26,
+   "time": 22,
    "hold": 0,
    "position": [
-    -0.75,
-    1.6,
-    1.15
+    -1.0,
+    1.5,
+    0.6
    ],
    "target": [
-    -1.4,
-    1.4,
-    -1.05
+    -1.65,
+    1.3,
+    -1.0
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -16.5,
-   "tilt": -5.0,
+   "pan": -22.1,
+   "tilt": -6.6,
    "lens": 24
   },
   {
    "name": "C6",
-   "time": 30,
+   "time": 28,
    "hold": 0,
    "position": [
-    -0.95,
-    1.5,
-    0.3
+    -1.15,
+    1.42,
+    0.15
    ],
    "target": [
-    -1.35,
-    1.4,
-    -1.1
+    -1.6,
+    1.3,
+    -1.0
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
    "aimMode": "look",
-   "pan": -15.9,
-   "tilt": -3.9,
+   "pan": -21.4,
+   "tilt": -5.6,
+   "lens": 24
+  },
+  {
+   "name": "C7",
+   "time": 32,
+   "hold": 0,
+   "position": [
+    0.5,
+    1.65,
+    1.1
+   ],
+   "target": [
+    -1.0,
+    1.3,
+    -0.7
+   ],
+   "targetName": "직접 지정",
+   "targetOffset": 0,
+   "aimMode": "look",
+   "pan": -39.8,
+   "tilt": -8.5,
    "lens": 24
   }
  ]
