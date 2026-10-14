@@ -18,7 +18,7 @@
   "sun": 1.6
  },
  "ceiling": true,
- "duration": 32,
+ "duration": 38,
  "aspect": 0.5625,
  "easing": "global",
  "clipLength": 6,
@@ -26,33 +26,39 @@
   6,
   12,
   18,
-  26
+  26,
+  32
  ],
  "shotMeta": [
   {
    "move": "Slow push-in",
-   "subject": "the two leads seen from behind just inside the glass door, with the warm record cafe beyond them",
-   "action": "Seen from behind, the couple pauses just inside the doorway and takes in the room, the woman turning her head slightly toward the man. Golden afternoon light spills from the shop onto the autumn street; nothing else moves."
+   "subject": "the two leads walking into the record cafe through the glass door",
+   "action": "Seen from behind, the couple walks in through the glass door and strolls toward the record bins, looking up and around at the glowing green record shelves and jazz posters; the woman glances up at the man with a small smile. Golden afternoon light follows them in from the autumn street."
   },
   {
    "move": "",
-   "subject": "the green record wall, framed jazz posters and the walnut listening bar, seen through the leads' eyes",
-   "action": "Point-of-view look-around: the camera drifts forward and turns left across the glowing record shelves, black-and-white jazz posters and turntables, as if seen through the leads' eyes. Candle flames flicker and the records on the turntables spin slowly."
+   "subject": "the couple browsing through the LPs in the wooden record bin",
+   "action": "Side by side at the record bin, the couple slowly flips through the LPs with both hands, pausing on covers and glancing at each other. Candle flames flicker; the vinyl on the turntables spins slowly."
   },
   {
    "move": "",
-   "subject": "the couple choosing records at the wooden record bin",
-   "action": "The woman flips through the LPs in the bin with both hands while the man lifts one record sleeve to study its cover; they share a soft smile. The records in the foreground bin stay still."
+   "subject": "the man lifting one LP from the bin while the woman looks at it",
+   "action": "The man lifts one jazz LP out of the bin and holds it up at his chest to study the cover; the woman leans in to look and they share a soft smile, choosing this record. The foreground bin stays still."
   },
   {
    "move": "",
    "subject": "a natural wipe past the tall green record shelf divider, revealing the lounge",
-   "action": "Transition: the camera trucks right past the tall green record shelf divider, which briefly fills the whole frame like a natural wipe, then glides toward the sunlit lounge where the couple now sits together on the cognac leather sofa."
+   "action": "Transition: the camera trucks right past the tall green record shelf divider, which briefly fills the whole frame like a natural wipe, then glides toward the sunlit lounge where the couple now sits on the cognac leather sofa looking at the chosen LP together, the woman resting her chin on her hand."
   },
   {
    "move": "Slow push-in",
-   "subject": "the couple sitting on the cognac leather sofa, listening to music with headphones",
-   "action": "Wearing headphones, the woman rests her head on the man's shoulder with her eyes half closed and one hand on her ear cup, while the man sits calmly beside her. Sunbeams drift over them, the tube amplifier glows and the turntable keeps spinning."
+   "subject": "the couple on the leather sofa putting on headphones",
+   "action": "The man sets the LP aside, and each of them slowly puts on a pair of over-ear headphones; the woman settles her head onto the man's shoulder and holds one ear cup with her hand as the music starts. The tube amplifier glows and the turntable spins."
+  },
+  {
+   "move": "Slow push-in",
+   "subject": "the two leads' faces as they listen to the music together",
+   "action": "Listening with eyes half closed, the woman leans on the man's shoulder and both of them break into a gentle, happy smile as the music plays. Sunbeams and dust motes drift over them; no other movement."
   }
  ],
  "scene": {
@@ -428,19 +434,37 @@
   {
    "type": "hifiwalk",
    "name": "주인공 입장",
-   "x": -1.2,
-   "z": 4.4,
+   "x": -0.9,
+   "z": 3.5,
    "rot": 180,
-   "to": 8
+   "to": 6
   },
   {
-   "type": "hifibrowse",
-   "name": "주인공 레코드",
+   "type": "hififlip",
+   "name": "주인공 둘러보기",
    "x": 0.5,
    "z": -0.18,
    "rot": 0,
-   "from": 9,
+   "from": 6,
+   "to": 18
+  },
+  {
+   "type": "hifibrowse",
+   "name": "주인공 고르기",
+   "x": 0.5,
+   "z": -0.18,
+   "rot": 0,
+   "from": 18,
    "to": 21
+  },
+  {
+   "type": "hifisitlp",
+   "name": "주인공 LP 보기",
+   "x": 2.4,
+   "z": -5.12,
+   "rot": 0,
+   "from": 21,
+   "to": 32
   },
   {
    "type": "hifilisten",
@@ -448,7 +472,7 @@
    "x": 2.4,
    "z": -5.12,
    "rot": 0,
-   "from": 21
+   "from": 32
   }
  ],
  "nodes": [
@@ -459,10 +483,10 @@
    "position": [
     -2.0,
     1.5,
-    9.6
+    8.6
    ],
    "target": [
-    -1.6,
+    -1.5,
     1.35,
     1.0
    ],
@@ -478,14 +502,14 @@
    "time": 6,
    "hold": 0,
    "position": [
-    -2.0,
+    -1.7,
     1.55,
-    6.9
+    5.0
    ],
    "target": [
-    -1.75,
-    1.35,
-    1.0
+    0.4,
+    1.25,
+    -0.1
    ],
    "targetName": "직접 지정",
    "targetOffset": 0,
@@ -496,54 +520,12 @@
   },
   {
    "name": "C3",
-   "time": 9,
-   "hold": 0,
-   "position": [
-    -2.2,
-    1.6,
-    4.9
-   ],
-   "target": [
-    -3.3,
-    1.5,
-    0.6
-   ],
-   "targetName": "직접 지정",
-   "targetOffset": 0,
-   "aimMode": "look",
-   "pan": 0,
-   "tilt": 0,
-   "lens": 24
-  },
-  {
-   "name": "C4",
    "time": 12,
    "hold": 0,
    "position": [
-    -1.8,
-    1.6,
-    3.5
-   ],
-   "target": [
-    -4.2,
-    1.5,
-    0.6
-   ],
-   "targetName": "직접 지정",
-   "targetOffset": 0,
-   "aimMode": "look",
-   "pan": 0,
-   "tilt": 0,
-   "lens": 24
-  },
-  {
-   "name": "C5",
-   "time": 18,
-   "hold": 0,
-   "position": [
-    0.5,
-    1.4,
-    2.95
+    -1.0,
+    1.45,
+    2.1
    ],
    "target": [
     0.5,
@@ -558,7 +540,28 @@
    "lens": 24
   },
   {
-   "name": "C6",
+   "name": "C4",
+   "time": 18,
+   "hold": 0,
+   "position": [
+    0.5,
+    1.4,
+    2.95
+   ],
+   "target": [
+    0.5,
+    1.3,
+    -0.1
+   ],
+   "targetName": "직접 지정",
+   "targetOffset": 0,
+   "aimMode": "look",
+   "pan": 0,
+   "tilt": 0,
+   "lens": 24
+  },
+  {
+   "name": "C5",
    "time": 20.5,
    "hold": 0,
    "position": [
@@ -579,7 +582,7 @@
    "lens": 24
   },
   {
-   "name": "C7",
+   "name": "C6",
    "time": 22.8,
    "hold": 0,
    "position": [
@@ -600,7 +603,7 @@
    "lens": 24
   },
   {
-   "name": "C8",
+   "name": "C7",
    "time": 26,
    "hold": 0,
    "position": [
@@ -621,17 +624,38 @@
    "lens": 24
   },
   {
-   "name": "C9",
+   "name": "C8",
    "time": 32,
    "hold": 0,
    "position": [
     2.45,
-    1.1,
-    -3.0
+    1.12,
+    -2.9
    ],
    "target": [
     2.4,
     1.0,
+    -5.1
+   ],
+   "targetName": "직접 지정",
+   "targetOffset": 0,
+   "aimMode": "look",
+   "pan": 0,
+   "tilt": 0,
+   "lens": 24
+  },
+  {
+   "name": "C9",
+   "time": 38,
+   "hold": 0,
+   "position": [
+    2.4,
+    1.15,
+    -3.6
+   ],
+   "target": [
+    2.4,
+    1.12,
     -5.1
    ],
    "targetName": "직접 지정",
