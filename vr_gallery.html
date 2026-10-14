@@ -609,7 +609,9 @@ function enterStudent(i){
   setTimeout(()=>$('fade').classList.add('on'), 250);
   // 이동하는 동안 다음 전시실 페이지를 미리 받아 둠
   const pre = document.createElement('link'); pre.rel = 'prefetch'; pre.href = s.url; document.head.appendChild(pre);
-  setTimeout(()=>{ location.href = s.url + (s.url.includes('?') ? '&' : '?') + 'from=hall&seat=' + (i+1); }, 1400);
+  // 전시실의 '졸업전시장' 버튼이 정확히 이 페이지로 돌아오도록 현재 주소를 함께 넘김
+  const hall = location.href.split('#')[0].split('?')[0];
+  setTimeout(()=>{ location.href = s.url + (s.url.includes('?') ? '&' : '?') + 'from=hall&seat=' + (i+1) + '&hall=' + encodeURIComponent(hall); }, 1400);
 }
 $('cGo').addEventListener('click', e=>{ e.preventDefault(); if(state.index>=0) enterStudent(state.index); });
 // 뒤로 가기로 돌아왔을 때(bfcache) 화면이 하얗게 남지 않도록

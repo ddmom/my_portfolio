@@ -627,7 +627,12 @@ const btn = $('enter');
 const q = new URLSearchParams(location.search);
 const fromHall = q.get('from')==='hall';
 const seat = parseInt(q.get('seat'), 10);
-if(seat >= 1) $('btnHall').href = 'vr_gallery.html?return=' + seat;
+{
+  // 졸업전시장에서 넘겨준 주소가 있으면 그곳으로, 없으면 같은 폴더의 vr_gallery.html로 돌아감
+  let hall = 'vr_gallery.html';
+  try { const h = new URL(q.get('hall') || '', location.href); if(q.get('hall') && h.origin === location.origin) hall = h.href; } catch(e){}
+  $('btnHall').href = hall + '?return=' + (seat >= 1 ? seat : 1);
+}
 tick();
 
 // 이미지가 하나씩 도착하는 대로 바로 벽에 겁니다 (전체를 기다리지 않음)
