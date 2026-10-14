@@ -63,7 +63,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 #enter:not(:disabled):hover{background:#45372b}
 #err{margin-top:18px;font-size:12px;color:#a33;max-width:520px;line-height:1.6}
 
-#fade{position:fixed;inset:0;z-index:30;background:#f4f6f9;opacity:0;pointer-events:none;transition:opacity 1.4s ease-out}
+#fade{position:fixed;inset:0;z-index:30;background:#f4f6f9;opacity:0;pointer-events:none;transition:opacity 1s ease-out}
 #fade.on{opacity:1;pointer-events:auto}
 #fadeMsg{position:absolute;left:0;right:0;top:50%;text-align:center;font-family:'Gowun Batang',serif;font-size:16px;letter-spacing:.1em;color:#6b645b}
 #tip{position:fixed;z-index:6;pointer-events:none;padding:6px 10px;border-radius:8px;background:rgba(42,33,26,.88);color:#fff;font-size:12px;opacity:0;transition:opacity .2s;transform:translate(12px,12px)}
@@ -413,7 +413,7 @@ function buildArtwork(i, tex){
   wash.position.set(0, 0.15, -0.02); grp.add(wash);
 
   [frame, art, matte, cap].forEach(m=>{ m.userData.index = i; pickables.push(m); });
-  pieces[i] = { grp, artMat, bulbMat, wash, lit:0.5, hover:0, w:wd, h };
+  pieces[i] = { grp, artMat, bulbMat, wash, cap, lit:0.5, hover:0, w:wd, h };
 }
 
 // ---------------------------------------------------------------- UI
@@ -624,25 +624,31 @@ addEventListener('resize', ()=>{
 const loader = new THREE.TextureLoader();
 let loaded = 0, failed = 0;
 const btn = $('enter');
-const fontsReady = document.fonts ? Promise.race([document.fonts.ready, new Promise(r=>setTimeout(r,2500))]) : Promise.resolve();
+const q = new URLSearchParams(location.search);
+const fromHall = q.get('from')==='hall';
+const seat = parseInt(q.get('seat'), 10);
+if(seat >= 1) $('btnHall').href = 'vr_gallery.html?return=' + seat;
 tick();
-fontsReady.then(()=>Promise.all(WORKS.map((w,i)=>new Promise(res=>{
-  loader.load(w.wall, tex=>{ buildArtwork(i, tex); loaded++; btn.textContent = `불러오는 중… ${loaded}/${N}`; res(); },
+
+// 이미지가 하나씩 도착하는 대로 바로 벽에 겁니다 (전체를 기다리지 않음)
+const loads = WORKS.map((w,i)=>new Promise(res=>{
+  loader.load(w.wall, tex=>{ buildArtwork(i, tex); loaded++; if(btn.disabled) btn.textContent = `불러오는 중… ${loaded}/${N}`; res(); },
     undefined, ()=>{ failed++; buildArtwork(i, placeholderTexture(i)); res(); });
-})))).then(()=>{
+}));
+// 글꼴은 기다리지 않고, 준비되면 캡션만 다시 그림
+if(document.fonts) document.fonts.ready.then(()=>pieces.forEach((pc,i)=>{ if(pc){ pc.cap.material.map.dispose(); pc.cap.material.map = captionTexture(i); } }));
+
+if(fromHall){
+  // 졸업전시장 토르소를 통해 들어온 경우: 기다리지 않고 바로 1층에서 시작하며 빛이 걷힘
+  $('intro').style.transition = 'none'; enter();
+  computeWanted(0); cam.a = want.a; cam.r = want.r; cam.h = want.h; camTarget.copy(want.target);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>$('fade').classList.remove('on')));
+}
+Promise.all(loads).then(()=>{
   btn.disabled = false; btn.textContent = '입장하기';
   if(failed && location.protocol==='file:')
     $('err').textContent = '파일을 더블클릭해서 열면 브라우저 보안 때문에 작품 이미지가 보이지 않습니다. GitHub Pages에 올리거나, 폴더에서 python -m http.server 실행 후 http://localhost:8000/portfolio_gallery.html 로 열어 주세요.';
-  const q = new URLSearchParams(location.search);
-  const seat = parseInt(q.get('seat'), 10);
-  if(seat >= 1) $('btnHall').href = 'vr_gallery.html?return=' + seat;
-  if(q.get('from')==='hall'){
-    // 졸업전시장 토르소를 통해 들어온 경우: 하얀 빛에서 바로 전시실이 밝아지며 시작
-    $('fade').classList.add('on');
-    $('intro').style.transition = 'none'; enter();
-    computeWanted(0); cam.a = want.a; cam.r = want.r; cam.h = want.h; camTarget.copy(want.target);  // 위에서 내려오지 않고 바로 1층에서 시작
-    requestAnimationFrame(()=>requestAnimationFrame(()=>$('fade').classList.remove('on')));
-  } else if(q.has('autostart')) enter();
+  if(!fromHall && q.has('autostart')) enter();
   window.__vr = { state, focusOn, overview, enter, snap(){ computeWanted(0); cam.a=want.a; cam.r=want.r; cam.h=want.h; camTarget.copy(want.target); pieces.forEach(p=>p&&(p.lit=0.6)); spots.forEach(s=>s.level=s.goal); } };
 });
 </script>
