@@ -63,6 +63,9 @@ button{font:inherit;cursor:pointer;color:inherit}
 #enter:not(:disabled):hover{background:#45372b}
 #err{margin-top:18px;font-size:12px;color:#a33;max-width:520px;line-height:1.6}
 
+#fade{position:fixed;inset:0;z-index:30;background:#f4f6f9;opacity:0;pointer-events:none;transition:opacity 1.4s ease-out}
+#fade.on{opacity:1;pointer-events:auto}
+#fadeMsg{position:absolute;left:0;right:0;top:50%;text-align:center;font-family:'Gowun Batang',serif;font-size:16px;letter-spacing:.1em;color:#6b645b}
 #tip{position:fixed;z-index:6;pointer-events:none;padding:6px 10px;border-radius:8px;background:rgba(42,33,26,.88);color:#fff;font-size:12px;opacity:0;transition:opacity .2s;transform:translate(12px,12px)}
 
 /* 크게 보기 */
@@ -99,6 +102,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 <div id="top" class="hud">
   <div id="brand"><div class="eyebrow">MINYOUNG CHO · VR GALLERY</div><h1>경험과 내일을 잇는 디자인</h1></div>
   <div id="controls">
+    <a class="pill" id="btnHall" href="vr_gallery.html?return=1">← 졸업전시장</a>
     <a class="pill" href="index.html">포트폴리오 홈</a>
     <button class="pill" id="btnOverview">전체 보기</button>
     <button class="pill on" id="btnTour">자동 투어 ❚❚</button>
@@ -121,6 +125,10 @@ button{font:inherit;cursor:pointer;color:inherit}
 <div id="strip" class="hud"><div class="row" id="chips"></div></div>
 <div id="hint">작품을 클릭하면 설명이 열립니다 · 한 번 더 클릭하면 크게 보기 · ← → 이동 · Space 투어 · Esc 전체 보기</div>
 <div id="tip"></div>
+<div id="fade"><div id="fadeMsg"></div></div>
+<script>
+if(/[?&]from=hall/.test(location.search)){ document.getElementById('fade').classList.add('on'); document.getElementById('fadeMsg').textContent='조민영 작가의 전시실로 들어가는 중…'; }
+</script>
 
 <div id="lightbox">
   <div id="lbTitle"></div>
@@ -625,7 +633,16 @@ fontsReady.then(()=>Promise.all(WORKS.map((w,i)=>new Promise(res=>{
   btn.disabled = false; btn.textContent = '입장하기';
   if(failed && location.protocol==='file:')
     $('err').textContent = '파일을 더블클릭해서 열면 브라우저 보안 때문에 작품 이미지가 보이지 않습니다. GitHub Pages에 올리거나, 폴더에서 python -m http.server 실행 후 http://localhost:8000/portfolio_gallery.html 로 열어 주세요.';
-  if(new URLSearchParams(location.search).has('autostart')) enter();
+  const q = new URLSearchParams(location.search);
+  const seat = parseInt(q.get('seat'), 10);
+  if(seat >= 1) $('btnHall').href = 'vr_gallery.html?return=' + seat;
+  if(q.get('from')==='hall'){
+    // 졸업전시장 토르소를 통해 들어온 경우: 하얀 빛에서 바로 전시실이 밝아지며 시작
+    $('fade').classList.add('on');
+    $('intro').style.transition = 'none'; enter();
+    computeWanted(0); cam.a = want.a; cam.r = want.r; cam.h = want.h; camTarget.copy(want.target);  // 위에서 내려오지 않고 바로 1층에서 시작
+    requestAnimationFrame(()=>requestAnimationFrame(()=>$('fade').classList.remove('on')));
+  } else if(q.has('autostart')) enter();
   window.__vr = { state, focusOn, overview, enter, snap(){ computeWanted(0); cam.a=want.a; cam.r=want.r; cam.h=want.h; camTarget.copy(want.target); pieces.forEach(p=>p&&(p.lit=0.6)); spots.forEach(s=>s.level=s.goal); } };
 });
 </script>

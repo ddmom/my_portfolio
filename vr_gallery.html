@@ -64,6 +64,8 @@ button{font:inherit;cursor:pointer}
 #enter:not(:disabled):hover{background:#1d5590}
 #err{margin-top:18px;font-size:12px;color:#a33}
 
+#fade{position:fixed;inset:0;z-index:30;background:#f4f6f9;opacity:0;pointer-events:none;transition:opacity 1.3s ease-in}
+#fade.on{opacity:1;pointer-events:auto}
 #tip{position:fixed;z-index:6;pointer-events:none;padding:6px 10px;border-radius:8px;background:rgba(18,58,99,.88);color:#fff;font-size:12px;opacity:0;transition:opacity .2s;transform:translate(12px,12px)}
 
 @media (max-width:760px){
@@ -109,6 +111,7 @@ button{font:inherit;cursor:pointer}
 <div id="strip" class="hud"><div class="row" id="chips"></div></div>
 <div id="hint">토르소를 클릭하면 작가 소개가 열립니다 · ← → 이동 · Space 투어 · Esc 전체 보기</div>
 <div id="tip"></div>
+<div id="fade"></div>
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"}}</script>
 <script>
@@ -129,7 +132,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 //        frost, cobalt, rosegold, holo, gold, ice, lined, glow)
 // =====================================================================
 const STUDENTS = [
-  { name:'학생 01', work:'숨의 결',         major:'시각디자인', material:'백색 대리석',   look:'marble',   url:'', desc:'호흡할 때 늘어나고 줄어드는 몸의 부피를 대리석의 결로 기록했습니다.' },
+  { name:'조민영', work:'경험과 내일을 잇는 디자인', major:'UI/UX · 브랜드', material:'백색 대리석', look:'marble', url:'portfolio_gallery.html', desc:'좋은 디자인은 일상을 조금 더 편안하고 행복하게 만든다고 믿습니다. 시니어 음악 앱 「노래한장」을 비롯한 열세 점의 작업이 이 토르소 너머 갤러리에 걸려 있습니다.' },
   { name:'학생 02', work:'반사된 나',       major:'미디어아트', material:'크롬 도금',     look:'chrome',   url:'', desc:'보는 사람이 작품 표면에 비치면서 비로소 완성되는 몸입니다.' },
   { name:'학생 03', work:'결정의 시간',     major:'공예',       material:'보랏빛 크리스털', look:'crystal', url:'', desc:'오랜 시간 천천히 자라는 결정처럼 쌓여 온 감정을 형상화했습니다.' },
   { name:'학생 04', work:'온도',           major:'산업디자인', material:'반투명 레진',   look:'rose',     url:'', desc:'사람의 체온을 색으로 옮겨, 빛이 통과할 때 따뜻하게 물드는 몸을 만들었습니다.' },
@@ -469,7 +472,7 @@ function updateCard(i){
   $('cMajor').textContent = s.major;
   $('cDesc').textContent = s.desc;
   const go = $('cGo');
-  if(s.url){ go.href = s.url; go.textContent = '작품 보러가기 →'; go.classList.remove('disabled'); }
+  if(s.url){ go.href = s.url; go.textContent = s.name+' 작가의 전시실로 입장 →'; go.classList.remove('disabled'); }
   else { go.removeAttribute('href'); go.textContent = '작품 페이지 준비 중'; go.classList.add('disabled'); }
   [...chipsEl.children].forEach((c,k)=>c.classList.toggle('active', k===i));
   chipsEl.children[i].scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
@@ -520,12 +523,14 @@ function computeWanted(dt){
     want.target.copy(posOf(state.index, PED_H + 0.68));
     // 모바일에서는 하단 카드에 가리지 않도록 작품을 화면 위쪽에 둠
     if(innerWidth <= 760){ want.target.y -= 0.85; want.h += 0.3; }
+    // 입장: 토르소를 향해 곧장 다가가며 빛 속으로 들어감
+    if(state.mode==='door'){ want.a = th; want.r = RING_R - 0.9; want.h = PED_H + 0.75; want.target.y = PED_H + 0.75; }
   }
 }
 
 function updateCamera(dt){
   computeWanted(dt);
-  const k = state.mode==='focus' ? 0.9 : (state.mode==='overview' ? 0.55 : 2);
+  const k = state.mode==='door' ? 1.6 : (state.mode==='focus' ? 0.9 : (state.mode==='overview' ? 0.55 : 2));
   cam.a += angDiff(cam.a, want.a) * (1-Math.exp(-k*dt));
   cam.r = damp(cam.r, want.r, k, dt);
   cam.h = damp(cam.h, want.h, k*0.85, dt);
@@ -543,7 +548,7 @@ function updateCamera(dt){
 
 // ---------------------------------------------------------------- per-frame lighting
 function updateLighting(dt){
-  const focus = state.mode==='focus';
+  const focus = state.mode==='focus' || state.mode==='door';
   hemi.intensity = damp(hemi.intensity, focus ? 0.38 : 0.7, 1.2, dt);
   sun.intensity = damp(sun.intensity, focus ? 0.55 : 1.1, 1.2, dt);
   spots.forEach(s=>{ s.level = damp(s.level, s.goal, s.goal ? 1.1 : 1.6, dt); s.light.intensity = s.level*75; s.light.visible = s.level>0.01; });
@@ -587,10 +592,26 @@ renderer.domElement.addEventListener('click', ev=>{
   const i = pick(ev);
   if(i>=0){
     // 이미 비추고 있는 작품을 한 번 더 클릭하면 학생 작품 페이지로 이동
-    if(i===state.index && STUDENTS[i].url) location.href = STUDENTS[i].url;
+    if(i===state.index && STUDENTS[i].url) enterStudent(i);
     else focusOn(i, true);
   }
 });
+
+// 학생 전시실로 입장: 카메라가 토르소 쪽으로 다가가며 화면이 빛으로 하얗게 차오른 뒤 이동
+function enterStudent(i){
+  const s = STUDENTS[i];
+  if(!s.url || state.mode==='door') return;
+  if(state.index !== i) focusOn(i, true);
+  state.tour = false; setTourButton();
+  state.mode = 'door';
+  $('card').classList.remove('show');
+  ['top','strip'].forEach(id=>$(id).style.opacity=0);
+  setTimeout(()=>$('fade').classList.add('on'), 500);
+  setTimeout(()=>{ location.href = s.url + (s.url.includes('?') ? '&' : '?') + 'from=hall&seat=' + (i+1); }, 1900);
+}
+$('cGo').addEventListener('click', e=>{ e.preventDefault(); if(state.index>=0) enterStudent(state.index); });
+// 뒤로 가기로 돌아왔을 때(bfcache) 화면이 하얗게 남지 않도록
+addEventListener('pageshow', e=>{ if(e.persisted){ $('fade').classList.remove('on'); ['top','strip'].forEach(id=>$(id).style.opacity=1); if(state.mode==='door') focusOn(state.index); } });
 
 $('btnOverview').onclick = ()=>overview();
 $('btnTour').onclick = ()=>{ state.tour = !state.tour; setTourButton(); if(state.tour && state.mode!=='focus') focusOn(0); };
@@ -620,10 +641,10 @@ const clock = new THREE.Clock();
 function tick(){
   const dt = Math.min(clock.getDelta(), 0.05);
   state.time += dt;
-  if(state.mode==='focus'){
+  if(state.mode==='focus' || state.mode==='door'){
     state.shotT += dt;
     $('progBar').style.width = (state.tour ? Math.min(100, state.shotT/DWELL*100) : 0)+'%';
-    if(state.tour && state.shotT >= DWELL){
+    if(state.mode==='focus' && state.tour && state.shotT >= DWELL){
       if(state.index === STUDENTS.length-1){ overview(); setTimeout(()=>{ if(state.tour && state.mode==='overview') focusOn(0); }, 9000); }
       else focusOn(state.index+1);
     }
@@ -654,7 +675,14 @@ addEventListener('resize', ()=>{
   addVisitors();
   tick();
   const b = $('enter'); b.disabled = false; b.textContent = '입장하기';
-  if(new URLSearchParams(location.search).has('autostart')) enter();
+  const q = new URLSearchParams(location.search);
+  const back = parseInt(q.get('return'), 10);
+  if(back >= 1 && back <= STUDENTS.length){
+    // 학생 전시실에서 돌아온 경우: 입장 화면 없이 그 학생의 토르소 앞에서 시작
+    $('intro').classList.add('hide'); ['top','strip'].forEach(id=>$(id).style.opacity=1);
+    state.tour = false; setTourButton(); focusOn(back-1);
+    computeWanted(0); cam.a = want.a; cam.r = RING_R - 1.2; cam.h = want.h; camTarget.copy(want.target);
+  } else if(q.has('autostart')) enter();
   window.__vr = { state, cam, camTarget, focusOn, overview, enter, snap(){ computeWanted(0); cam.a=want.a; cam.r=want.r; cam.h=want.h; camTarget.copy(want.target); pieces.forEach(p=>p.lit=0.6); spots.forEach(s=>s.level=s.goal); } };
 });
 </script>
