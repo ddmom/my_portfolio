@@ -331,16 +331,16 @@ footer{display:flex;justify-content:center;padding:10px 0 64px}
 
 /* v5 · 홈 아이콘: 공감 · 해결 · 연결 색이 섞인 그라데이션 */
 .brand .ball{background:radial-gradient(circle at 30% 26%,rgba(255,255,255,.9) 0,rgba(255,255,255,0) 34%),conic-gradient(from 200deg,var(--grape),var(--leaf),var(--tang),var(--grape));box-shadow:0 8px 16px rgba(35,38,74,.22),inset -4px -6px 10px rgba(35,38,74,.18)}
-/* v5 · 섹션마다 배경색이 다음 섹션으로 서서히 바뀜 */
-:root{--t0:#ECEAF8;--t1:#E5F3EB;--t2:#FCEDE3;--t3:#E9E7FA;--t4:#E4EDF8}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--t0:#17182B;--t1:#14261F;--t2:#2B1D18;--t3:#1C1A35;--t4:#14202D}}
-:root[data-theme="dark"]{--t0:#17182B;--t1:#14261F;--t2:#2B1D18;--t3:#1C1A35;--t4:#14202D}
-#cover{background:linear-gradient(180deg,var(--t0) 0,var(--t0) 55%,var(--t1) 100%)}
-#skills{background:linear-gradient(180deg,var(--t1) 0,var(--t1) 50%,var(--t2) 100%)}
-#about{background:linear-gradient(180deg,var(--t2) 0,var(--t2) 55%,var(--t3) 100%)}
-#projects{background:linear-gradient(180deg,var(--t3) 0,var(--t3) 60%,var(--t4) 100%)}
-#contact{background:var(--t4)}
-body{background:var(--t4)}
+/* v6 · 섹션별 배경: 표지=공감(보라) · Skills=해결(초록) · About=연결(주황) · Works 이후=세 색 그라데이션 */
+:root{--bgP:#E2DCFA;--bgG:#D6EFDF;--bgO:#FCE0CD;--gP:#E6E0FB;--gG:#DDF2E4;--gO:#FDE6D6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bgP:#231E42;--bgG:#14301F;--bgO:#352015;--gP:#221E3D;--gG:#16291F;--gO:#2C1D16}}
+:root[data-theme="dark"]{--bgP:#231E42;--bgG:#14301F;--bgO:#352015;--gP:#221E3D;--gG:#16291F;--gO:#2C1D16}
+#cover{background:var(--bgP)}
+#skills{background:linear-gradient(180deg,var(--bgP) 0,var(--bgG) 90px,var(--bgG) 100%)}
+#about{background:linear-gradient(180deg,var(--bgG) 0,var(--bgO) 90px,var(--bgO) 100%)}
+#projects{background:linear-gradient(180deg,var(--bgO) 0,transparent 140px),linear-gradient(135deg,var(--gP) 0%,var(--gG) 50%,var(--gO) 100%)}
+#contact{background:linear-gradient(135deg,var(--gO) 0%,var(--gG) 50%,var(--gP) 100%)}
+body{background:var(--gP)}
 /* v5 · 7개 궤도 */
 .orbit{--s:calc(var(--W) * .26)}
 .orbit-ring li{transform:rotate(calc(var(--i) * 360deg / 7 - 90deg)) translate(var(--r)) rotate(calc(var(--i) * -360deg / 7 + 90deg)) translate(-50%,-50%)}
