@@ -94,7 +94,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 <div id="intro">
   <div class="eyebrow">PORTFOLIO · VR GALLERY</div>
   <h1>경험과 내일을 잇는 디자인</h1>
-  <div class="sub">조민영의 작업 열세 점을 원형 갤러리 벽에 걸었습니다.<br>입장하면 카메라가 한 점씩 천천히 비춥니다.</div>
+  <div class="sub">조민영의 작업 여섯 점을 원형 갤러리 벽에 걸었습니다.<br>입장하면 카메라가 한 점씩 천천히 비춥니다.</div>
   <button id="enter" disabled>불러오는 중…</button>
   <div id="err"></div>
 </div>
@@ -151,56 +151,38 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 // =====================================================================
 //  전시 작품 목록 — 여기만 고치면 갤러리 전체에 반영됩니다.
-//  wall : 벽에 거는 이미지 (images/gallery/ 의 가벼운 사본)
-//  full : '크게 보기'에서 보여 줄 원본 이미지들 (여러 장이면 넘겨 볼 수 있음)
+//  intro: true 이면 번호 없이 '인사말' 액자로 걸림
+//  wall : 벽에 거는 이미지,  full : '크게 보기'에서 보여 줄 이미지들 (여러 장이면 넘겨 볼 수 있음)
 //  link : 상세 페이지 주소 (비워 두면 버튼이 숨겨짐)
 //  frame: 액자 색 (black / white / oak)
 // =====================================================================
 const WORKS = [
-  { title:'노래한장', sub:'세대 공감 시니어 음악 플랫폼', cat:'UI/UX', year:'2025', frame:'oak',
-    desc:'감성과 추억을 담아 노래를 영상으로 남기는 시니어 음악 앱입니다. 원터치 녹음 버튼과 큰 글씨 3단 메뉴로 시니어 사용자의 이탈률을 15% 줄였습니다.',
-    tags:['시니어UX','커뮤니티','콘텐츠'], wall:'images/gallery/song_main2.jpg', full:['images/song_main2.jpg','images/song_main1.jpg','images/song_main.jpeg'], link:'index.html#p1' },
-  { title:'노래한장 앱 목업', sub:'Sing Along 홈 화면', cat:'UI/UX', year:'2025', frame:'white',
-    desc:'일상 속 스마트폰 화면에 자연스럽게 놓인 노래한장 앱 아이콘. 실제 사용 장면을 상상할 수 있도록 연출한 목업입니다.',
-    tags:['목업','앱 아이콘'], wall:'images/gallery/song_main.jpg', full:['images/song_main.jpeg'], link:'' },
-  { title:'K-Discovery Metaverse Tour', sub:'전통과 현대의 만남', cat:'리디자인 포스터', year:'2025', frame:'black',
-    desc:'VR 고글을 쓴 선비가 메타버스 속 서울을 여행합니다. 한국의 과거와 미래를 한 장면에 담은 리디자인 포스터입니다.',
-    tags:['포스터','일러스트','메타버스'], wall:'images/gallery/image1.jpg', full:['images/image1.jpg','images/meta_ui.jpg'], link:'' },
-  { title:'필이 좋은 여행, 한입만', sub:'프로그램 홍보 포스터', cat:'홍보 디자인', year:'2025', frame:'black',
-    desc:'넷플릭스 오리지널 시리즈 시즌 공개를 알리는 홍보 포스터. 맛있게 한입 먹는 순간의 표정과 경쾌한 타이포그래피를 강조했습니다.',
-    tags:['포스터','타이포그래피'], wall:'images/gallery/image3.jpg', full:['images/image3.jpg','images/pill_main.jpg'], link:'' },
-  { title:'우리의 북촌한옥마을', sub:'관광공사 서울관광 홍보', cat:'관광 포스터', year:'2025', frame:'oak',
-    desc:'한복을 입고 북촌 골목을 걷는 장면으로 서울 관광의 설렘을 전하는 포스터입니다. 혜택 바우처와 QR 정보를 함께 담았습니다.',
-    tags:['관광','포스터','서울'], wall:'images/gallery/hanok_main.jpg', full:['images/hanok_main.jpg','images/image2.jpg'], link:'' },
-  { title:'GOOD DAY', sub:'음악 토크쇼 타이틀', cat:'방송 그래픽', year:'2025', frame:'white',
-    desc:'음악과 이야기가 만나 따뜻한 하루가 되는 토크쇼. 기타와 마이크, 따뜻한 오렌지 톤으로 프로그램의 분위기를 표현했습니다.',
-    tags:['일러스트','방송'], wall:'images/gallery/good_title.jpg', full:['images/good_title.jpg'], link:'' },
-  { title:'금요일 밤의 버스킹', sub:'공연 홍보 포스터', cat:'홍보 디자인', year:'2025', frame:'white',
-    desc:'퇴근길 발걸음을 붙잡는 홍대 앞 버스킹 공연 포스터. 팝한 색감과 리듬감 있는 아이콘으로 공연의 흥을 전합니다.',
-    tags:['포스터','팝아트'], wall:'images/gallery/good_pop.jpg', full:['images/good_pop.jpg'], link:'' },
-  { title:'IKEA 로고 리디자인', sub:'Better Everyday, Sustainable', cat:'브랜드 디자인', year:'2025', frame:'oak',
-    desc:'지속 가능성을 주제로 IKEA 로고를 다시 그리고, 리디자인 전후 비교와 앱 아이콘·굿즈 적용까지 정리한 브랜드 보드입니다.',
-    tags:['브랜딩','로고','지속가능'], wall:'images/gallery/ikea.jpg', full:['images/ikea.jpg'], link:'' },
-  { title:'LightHouse', sub:'키 비주얼', cat:'그래픽', year:'2025', frame:'black',
-    desc:'물보라 속에 떠오른 수박과 과일, 그 뒤로 빛나는 등대. 신선함과 생동감을 강한 대비로 표현한 키 비주얼입니다.',
-    tags:['키비주얼','합성'], wall:'images/gallery/melon.jpg', full:['images/melon.jpg'], link:'' },
-  { title:'Blooming Beauty', sub:'플라워 브랜드 비주얼', cat:'그래픽', year:'2025', frame:'white',
-    desc:'튤립과 꽃잎을 겹겹이 배치하고 우아한 손글씨 로고를 더해, 피어나는 아름다움을 표현했습니다.',
-    tags:['브랜드','플라워'], wall:'images/gallery/flower_elegant.jpg', full:['images/flower_elegant.jpg'], link:'' },
-  { title:'The Flower Store', sub:'감사 카드 디자인', cat:'편집 디자인', year:'2025', frame:'oak',
-    desc:'꽃집 구매 고객에게 전하는 감사 카드. 앞면의 레터링과 뒷면의 일러스트로 따뜻한 첫인상을 남기도록 구성했습니다.',
-    tags:['카드','편집'], wall:'images/gallery/Rectangle-1.jpg', full:['images/Rectangle-1.jpeg'], link:'' },
-  { title:'시니어 건강 신호', sub:'반려동물 건강 리플릿', cat:'편집 디자인', year:'2025', frame:'white',
-    desc:'노령 반려동물의 건강 이상 신호를 알기 쉽게 정리한 3단 리플릿입니다. 정보 구조를 단순하게 나누어 읽기 편하게 했습니다.',
-    tags:['리플릿','정보디자인'], wall:'images/gallery/cat.jpg', full:['images/cat.jpg'], link:'' },
-  { title:'Break Through', sub:'스키 합성 그래픽', cat:'그래픽', year:'2025', frame:'black',
-    desc:'거실 TV 화면을 뚫고 눈보라와 함께 튀어나오는 스노보더. 화면 밖으로 확장되는 몰입감을 합성으로 표현했습니다.',
-    tags:['합성','광고'], wall:'images/gallery/ski.jpg', full:['images/ski.jpeg'], link:'' },
+  { intro:true, title:'조민영 작품전', sub:'Designing tomorrow from today\'s experience', cat:'Design Exhibition', year:'2026', frame:'black',
+    desc:'경험과 내일을 잇는 디자인. 스타벅스 · Re:Link · 노래한장 · 닥터프릿지 · 여행 포스터 콜라주 · 묘한친구, 여섯 개의 작업을 소개합니다.',
+    tags:['UI/UX','브랜딩','편집디자인'], wall:'images/works/00_title.jpg', full:['images/works/00_title.jpg'], link:'' },
+  { title:'스타벅스 리디자인', sub:'나만의 취향 기록소', cat:'앱 리디자인', year:'2026', frame:'oak',
+    desc:'주문 앱을 넘어, 커피 경험을 기록하는 디지털 아카이브. 큰 글씨와 텍스트 중심 레이아웃, 마신 커피를 기록하는 취향 아카이브, 원두 이야기를 매거진처럼 담았습니다.',
+    tags:['앱리디자인','액티브시니어','에디토리얼','아카이브'], wall:'images/works/01_starbucks.jpg', full:['images/works/01_starbucks.jpg'], link:'index.html#p4' },
+  { title:'Re:Link', sub:'여행이 관계가 되는 로컬 라이프 플랫폼', cat:'사이트 리디자인 · Airbnb', year:'2026', frame:'black',
+    desc:'숙소 주변 커뮤니티 지도, 이웃처럼 머무는 Temporary Local, 지역과 나누는 상생 생태계로 여행을 관계로 바꿉니다.',
+    tags:['여행','지역상생','지속가능','커뮤니티'], wall:'images/works/02_relink.jpg', full:['images/works/02_relink.jpg'], link:'index.html#p3' },
+  { title:'노래한장', sub:'사진 한 장, 이야기가 나만의 노래가 됩니다', cat:'UI/UX', year:'2026', frame:'black',
+    desc:'원터치 녹음과 큰 글씨 3단 메뉴, 사진과 이야기로 만드는 AI 노래, QR이 담긴 LP · 포토카드까지 이어지는 시니어 음악 앱입니다.',
+    tags:['커뮤니티','콘텐츠','사용자경험','시니어UX'], wall:'images/works/03_noraehanjang.jpg', full:['images/works/03_noraehanjang.jpg'], link:'index.html#p1' },
+  { title:'닥터프릿지', sub:'떠나기 전엔 비우고, 돌아오면 건강하게 채우는 냉장고', cat:'App Design', year:'2026', frame:'white',
+    desc:'소비기한 신호등과 임박 알림, 여행 · 환절기 비움 · 채움 모드, 고혈압 · 당뇨 맞춤 장보기를 담은 시니어 식생활 관리 앱입니다.',
+    tags:['건강','소비기한','장보기','시니어'], wall:'images/works/04_drfridge.jpg', full:['images/works/04_drfridge.jpg'], link:'index.html#p2' },
+  { title:'여행 포스터 콜라주', sub:'흩어진 여행 포스터를 폴라로이드처럼 한 장에', cat:'편집 디자인', year:'2026', frame:'white',
+    desc:'필이 좋은 여행 · 넷플릭스 포스터, 북촌한옥마을 낮 · 눈 · 밤, K-Discovery 메타버스 투어와 스키장 포스터를 한 장의 콜라주로 엮었습니다.',
+    tags:['포스터','관광홍보','편집디자인','콜라주'], wall:'images/works/05_travel_collage.jpg', full:['images/works/05_travel_collage.jpg'], link:'index.html#p5' },
+  { title:'묘한친구', sub:'노령묘 보호자를 위한 약 먹이기 솔루션', cat:'브랜딩 · 패키지', year:'2026', frame:'oak',
+    desc:'고양이와 슬쩍 숨긴 캡슐을 담은 로고, A4 3단 접지 리플렛, 컬러 코딩 캔 패키지로 이어지는 브랜드입니다.',
+    tags:['브랜딩','패키지','리플렛','시니어반려'], wall:'images/works/06_myohanchingu.jpg', full:['images/works/06_myohanchingu.jpg'], link:'index.html#p6' },
 ];
 const DWELL = 9;            // 작품 하나를 비추는 시간(초)
-const WALL_R = 11;          // 1층 원형 벽 반지름(m)
+const WALL_R = 9;           // 1층 원형 벽 반지름(m)
 const HANG_Y = 1.8;         // 작품 중심 높이
-const MAX_H = 2.0, MAX_W = 2.7;
+const MAX_H = 2.0, MAX_W = 3.2;
 
 // ---------------------------------------------------------------- renderer
 const N = WORKS.length;
@@ -222,6 +204,8 @@ const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
 
 const camera = new THREE.PerspectiveCamera(46, innerWidth/innerHeight, 0.1, 120);
+const fitFov = ()=>{ camera.fov = innerWidth <= 760 ? 62 : 46; camera.updateProjectionMatrix(); };  // 세로 화면에서는 넓은 액자가 다 보이도록
+fitFov();
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.3, 0.4, 1.35));
@@ -250,10 +234,12 @@ const angDiff = (a,b)=>{ let d=(b-a)%(Math.PI*2); if(d>Math.PI)d-=Math.PI*2; if(
 const angleOf = i => i/N*Math.PI*2 + Math.PI/2;
 const radial = (a, r, y=0)=> new THREE.Vector3(Math.cos(a)*r, y, Math.sin(a)*r);
 const rightOf = a => new THREE.Vector3(-Math.sin(a), 0, Math.cos(a)); // 중심에서 벽을 바라볼 때 화면 오른쪽
-const pad = i => String(i+1).padStart(2,'0');
+// 인사말 액자는 번호 없이, 나머지는 01부터
+const pad = i => WORKS[i].intro ? 'Intro' : String(i + 1 - WORKS.slice(0,i).filter(w=>w.intro).length).padStart(2,'0');
+const noLabel = i => WORKS[i].intro ? 'Intro' : 'No. '+pad(i);
 
 // ---------------------------------------------------------------- architecture
-const VOID_R = 8.2;
+const VOID_R = 6.9;
 const white = new THREE.MeshStandardMaterial({ color:0xf1efeb, roughness:0.85 });
 const concrete = new THREE.MeshStandardMaterial({ color:0xcbc7c1, roughness:0.95 });
 const led = new THREE.MeshBasicMaterial({ color:new THREE.Color(1.5,1.4,1.25), toneMapped:false });
@@ -289,7 +275,7 @@ LEVELS.forEach((y, li)=>{
   s2.rotation.x = Math.PI/2; s2.position.y = y + 1.18; scene.add(s2);
 });
 // 천장과 천창
-const OCULUS_R = 2.8, CEIL_Y = 18;
+const OCULUS_R = 2.3, CEIL_Y = 18;
 {
   const ceil = new THREE.Mesh(new THREE.RingGeometry(OCULUS_R, WALL_R, 128), new THREE.MeshStandardMaterial({ color:0xe8e5e0, roughness:0.9, side:THREE.DoubleSide }));
   ceil.rotation.x = Math.PI/2; ceil.position.y = CEIL_Y; scene.add(ceil);
@@ -337,7 +323,7 @@ scene.add(new THREE.Points(dustGeo, new THREE.PointsMaterial({ map:dotTex, size:
   const benchMat = new THREE.MeshStandardMaterial({ color:0x8a6a4c, roughness:0.55 });
   const legMat = new THREE.MeshStandardMaterial({ color:0x2b2826, roughness:0.4, metalness:0.6 });
   [0, Math.PI].forEach(a=>{
-    const g = new THREE.Group(); g.position.copy(radial(a+0.4, 4.2)); g.lookAt(0,0,0); scene.add(g);
+    const g = new THREE.Group(); g.position.copy(radial(a+0.4, 3.4)); g.lookAt(0,0,0); scene.add(g);
     const seat = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.08, 0.5), benchMat); seat.position.y = 0.45; seat.castShadow = seat.receiveShadow = true; g.add(seat);
     [-0.85, 0.85].forEach(x=>{ const l = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.42, 0.44), legMat); l.position.set(x, 0.21, 0); g.add(l); });
   });
@@ -352,7 +338,7 @@ const FRAME_STYLE = {
 function captionTexture(i){
   const w = WORKS[i]; const c=document.createElement('canvas'); c.width=480; c.height=300; const x=c.getContext('2d');
   x.fillStyle='#fbfaf7'; x.fillRect(0,0,480,300);
-  x.fillStyle='#8a5a2e'; x.font='600 26px "Noto Sans KR", sans-serif'; x.fillText('No. '+pad(i), 30, 52);
+  x.fillStyle='#8a5a2e'; x.font='600 26px "Noto Sans KR", sans-serif'; x.fillText(noLabel(i), 30, 52);
   x.fillStyle='#1f1a15'; x.font='700 40px "Gowun Batang", serif';
   // 긴 제목은 두 줄로
   const words = w.title.split(' '); let line='', y=110, lines=0;
@@ -377,7 +363,8 @@ function buildArtwork(i, tex){
   let h = MAX_H, wd = h*aspect; if(wd > MAX_W){ wd = MAX_W; h = wd/aspect; }
   const a = angleOf(i);
   const grp = new THREE.Group();
-  grp.position.copy(radial(a, WALL_R-0.09, HANG_Y)); grp.lookAt(0, HANG_Y, 0); scene.add(grp);
+  // 넓은 액자 모서리가 곡면 벽을 뚫지 않도록 벽에서 조금 더 띄움
+  grp.position.copy(radial(a, WALL_R - 0.09 - (wd*wd)/(8*WALL_R), HANG_Y)); grp.lookAt(0, HANG_Y, 0); scene.add(grp);
 
   const st = FRAME_STYLE[w.frame] || FRAME_STYLE.black;
   const border = 0.06, mat = Math.min(wd,h)*0.08;
@@ -427,7 +414,7 @@ WORKS.forEach((w,i)=>{
 });
 function updateCard(i){
   const w = WORKS[i];
-  $('cNo').textContent = 'No. '+pad(i);
+  $('cNo').textContent = noLabel(i);
   $('cTitle').textContent = w.title;
   $('cSub').textContent = w.sub;
   $('cCat').textContent = w.cat;
@@ -496,15 +483,15 @@ function computeWanted(dt){
   } else if(state.mode==='overview'){
     // 빛기둥 옆에서 맞은편 벽을 바라보며 천천히 한 바퀴
     overviewA += dt*0.05;
-    want.a = overviewA; want.r = 1.6; want.h = 2.2;
+    want.a = overviewA; want.r = 1.2; want.h = 2.2;
     want.target.copy(radial(overviewA+Math.PI, WALL_R, 1.75));
   } else {
     const a = angleOf(state.index);
     const sway = -0.1*Math.cos(state.shotT*Math.PI/DWELL);   // 작품 앞을 왼쪽→오른쪽으로 천천히 지나감
-    want.a = a + sway; want.r = WALL_R - 4.8; want.h = 1.62 + 0.08*Math.sin(state.shotT*0.4);
+    want.a = a + sway; want.r = WALL_R - 5.9; want.h = 1.62 + 0.08*Math.sin(state.shotT*0.4);
     want.target.copy(radial(a, WALL_R, HANG_Y));
-    if(wide) want.target.addScaledVector(rightOf(a), 0.95);  // 오른쪽 카드에 가리지 않도록 작품을 왼쪽에
-    if(narrow){ want.a = a + sway*0.4; want.r = WALL_R - 7.4; want.h = 1.5; want.target.y -= 1.1; }  // 모바일: 세로 화면에 액자가 다 들어오도록 물러서고, 하단 카드 위로 작품을 올림
+    if(wide) want.target.addScaledVector(rightOf(a), 1.15);  // 오른쪽 카드에 가리지 않도록 작품을 왼쪽에
+    if(narrow){ want.a = a + sway*0.3; want.r = 0.4; want.h = 1.5; want.target.y -= 1.7; }  // 모바일: 세로 화면에 액자가 다 들어오도록 물러서고, 하단 카드 위로 작품을 올림
   }
 }
 function updateCamera(dt){
@@ -616,7 +603,7 @@ function tick(){
   requestAnimationFrame(tick);
 }
 addEventListener('resize', ()=>{
-  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+  camera.aspect = innerWidth/innerHeight; fitFov();
   renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight);
 });
 
@@ -654,7 +641,7 @@ Promise.all(loads).then(()=>{
   if(failed && location.protocol==='file:')
     $('err').textContent = '파일을 더블클릭해서 열면 브라우저 보안 때문에 작품 이미지가 보이지 않습니다. GitHub Pages에 올리거나, 폴더에서 python -m http.server 실행 후 http://localhost:8000/portfolio_gallery.html 로 열어 주세요.';
   if(!fromHall && q.has('autostart')) enter();
-  window.__vr = { state, focusOn, overview, enter, snap(){ computeWanted(0); cam.a=want.a; cam.r=want.r; cam.h=want.h; camTarget.copy(want.target); pieces.forEach(p=>p&&(p.lit=0.6)); spots.forEach(s=>s.level=s.goal); } };
+  window.__vr = { state, pieces, camera, scene, focusOn, overview, enter, snap(){ computeWanted(0); cam.a=want.a; cam.r=want.r; cam.h=want.h; camTarget.copy(want.target); pieces.forEach(p=>p&&(p.lit=0.6)); spots.forEach(s=>s.level=s.goal); } };
 });
 </script>
 </body>
