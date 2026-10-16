@@ -69,14 +69,26 @@ button{font:inherit;cursor:pointer;color:inherit}
 #tip{position:fixed;z-index:6;pointer-events:none;padding:6px 10px;border-radius:8px;background:rgba(42,33,26,.88);color:#fff;font-size:12px;opacity:0;transition:opacity .2s;transform:translate(12px,12px)}
 
 /* 크게 보기 */
-#lightbox{position:fixed;inset:0;z-index:20;background:rgba(20,16,12,.92);display:none;flex-direction:column;align-items:center;justify-content:center;padding:56px 16px 16px}
+#lightbox{position:fixed;inset:0;z-index:20;background:rgba(20,16,12,.97);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;flex-direction:column;align-items:center;justify-content:center;padding:56px 16px 16px}
 #lightbox.show{display:flex}
-#lbImg{max-width:100%;max-height:calc(100% - 90px);object-fit:contain;box-shadow:0 20px 70px rgba(0,0,0,.5);background:#fff}
+.lb-body{display:flex;gap:28px;align-items:center;width:min(1280px,100%);max-height:100%;min-height:0}
+.lb-view{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;max-height:100%}
+#lbImg{max-width:100%;max-height:calc(100vh - 160px);object-fit:contain;box-shadow:0 20px 70px rgba(0,0,0,.5);background:#fff;border-radius:6px}
+.lb-info{width:340px;flex-shrink:0;color:#f3e8dc;word-break:keep-all}
+.lb-info .no{font-size:12px;letter-spacing:.25em;color:#e9c9a6;font-weight:600}
+.lb-info h2{font-family:'Gowun Batang',serif;font-size:28px;margin:6px 0 10px;color:#fff}
+.lb-lead{font-size:16px;font-weight:600;line-height:1.6;margin:0 0 16px}
+.lb-points{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:10px}
+.lb-points li{display:flex;align-items:center;gap:10px;font-size:14px;line-height:1.4}
+.lb-points b{width:26px;height:26px;border-radius:50%;background:#b8743a;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lb-info .tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}.lb-info .tags span{font-size:11px;padding:3px 8px;border-radius:999px;background:rgba(233,201,166,.18);color:#e9c9a6}
+.lb-desc{font-size:13px;line-height:1.7;color:#cfc3b6;margin:0}
+@media (max-width:860px){#lightbox{justify-content:flex-start;overflow:auto}.lb-body{flex-direction:column;align-items:stretch}.lb-info{width:auto}#lbImg{max-height:50vh}}
 #lbThumbs{display:flex;gap:8px;margin-top:14px}
 #lbThumbs img{width:54px;height:54px;object-fit:cover;border-radius:8px;opacity:.5;cursor:pointer;border:2px solid transparent}
 #lbThumbs img.on{opacity:1;border-color:#e9c9a6}
 #lbClose{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;padding:8px 16px;font-size:13px}
-#lbTitle{position:absolute;top:20px;left:20px;color:#f3e8dc;font-family:'Gowun Batang',serif;font-size:18px}
+
 
 @media (max-width:760px){
   #top{padding:14px}#brand h1{font-size:19px}#controls .pill{padding:7px 10px;font-size:11px}
@@ -116,25 +128,25 @@ button{font:inherit;cursor:pointer;color:inherit}
   <div class="meta"><span id="cCat">분야</span><span id="cYear">연도</span></div>
   <p id="cDesc">설명</p>
   <div class="tags" id="cTags"></div>
-  <button class="go" id="cZoom">작품 크게 보기</button>
-  <a class="go go2" id="cLink" href="#">상세 페이지 →</a>
+  <button class="go" id="cZoom">작품 상세 보기</button>
   <div class="nav"><button id="cPrev">← 이전 작품</button><button id="cNext">다음 작품 →</button></div>
   <div id="progress"><i id="progBar"></i></div>
 </div>
 
 <div id="strip" class="hud"><div class="row" id="chips"></div></div>
-<div id="hint">작품을 클릭하면 설명이 열립니다 · 한 번 더 클릭하면 크게 보기 · ← → 이동 · Space 투어 · Esc 전체 보기</div>
+<div id="hint">작품을 클릭하면 설명이 열립니다 · 한 번 더 클릭하면 상세 보기 · ← → 이동 · Space 투어 · Esc 전체 보기</div>
 <div id="tip"></div>
 <div id="fade"><div id="fadeMsg"></div></div>
 <script>
 if(/[?&]from=hall/.test(location.search)){ document.getElementById('fade').classList.add('on'); document.getElementById('fadeMsg').textContent='조민영 작가의 전시실로 들어가는 중…'; }
 </script>
 
-<div id="lightbox">
-  <div id="lbTitle"></div>
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="작품 상세">
   <button id="lbClose">닫기 ✕</button>
-  <img id="lbImg" alt="" />
-  <div id="lbThumbs"></div>
+  <div class="lb-body">
+    <div class="lb-view"><img id="lbImg" alt="" /><div id="lbThumbs"></div></div>
+    <aside class="lb-info"><div class="no" id="lbNo"></div><h2 id="lbTitle"></h2><p class="lb-lead" id="lbLead"></p><ol class="lb-points" id="lbPoints"></ol><div class="tags" id="lbTags"></div><p class="lb-desc" id="lbDesc"></p></aside>
+  </div>
 </div>
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"}}</script>
@@ -153,31 +165,32 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 //  전시 작품 목록 — 여기만 고치면 갤러리 전체에 반영됩니다.
 //  intro: true 이면 번호 없이 '인사말' 액자로 걸림
 //  wall : 벽에 거는 이미지,  full : '크게 보기'에서 보여 줄 이미지들 (여러 장이면 넘겨 볼 수 있음)
-//  link : 상세 페이지 주소 (비워 두면 버튼이 숨겨짐)
+//  id   : 바로가기 주소에 쓰는 이름 (portfolio_gallery.html?work=id)
+//  lead · points : '작품 상세 보기'에 나오는 한 줄 소개와 특징 3가지
 //  frame: 액자 색 (black / white / oak)
 // =====================================================================
 const WORKS = [
   { intro:true, title:'조민영 작품전', sub:'Designing tomorrow from today\'s experience', cat:'Design Exhibition', year:'2026', frame:'black',
     desc:'경험과 내일을 잇는 디자인. 스타벅스 · Re:Link · 노래한장 · 닥터프릿지 · 여행 포스터 콜라주 · 묘한친구, 여섯 개의 작업을 소개합니다.',
-    tags:['UI/UX','브랜딩','편집디자인'], wall:'images/works/00_title.jpg', full:['images/works/00_title.jpg'], link:'' },
+    tags:['UI/UX','브랜딩','편집디자인'], id:'intro', lead:'경험과 내일을 잇는 디자인', points:['스타벅스 · Re:Link · 노래한장','닥터프릿지 · 여행 포스터 콜라주','묘한친구'], wall:'images/works/00_title.jpg', full:['images/works/00_title.jpg'], link:'' },
   { title:'스타벅스 리디자인', sub:'나만의 취향 기록소', cat:'앱 리디자인', year:'2026', frame:'oak',
     desc:'주문 앱을 넘어, 커피 경험을 기록하는 디지털 아카이브. 큰 글씨와 텍스트 중심 레이아웃, 마신 커피를 기록하는 취향 아카이브, 원두 이야기를 매거진처럼 담았습니다.',
-    tags:['앱리디자인','액티브시니어','에디토리얼','아카이브'], wall:'images/works/01_starbucks.jpg', full:['images/works/01_starbucks.jpg'], link:'index.html#p4' },
+    tags:['앱리디자인','액티브시니어','에디토리얼','아카이브'], id:'starbucks', lead:'주문 앱을 넘어, 커피 경험을 기록하는 ‘나만의 취향 기록소’', points:['큰 글씨 · 텍스트 중심 레이아웃','마신 커피를 기록하는 취향 아카이브','원두 이야기를 매거진처럼'], wall:'images/works/01_starbucks.jpg', full:['images/works/01_starbucks.jpg'], link:'index.html#p4' },
   { title:'Re:Link', sub:'여행이 관계가 되는 로컬 라이프 플랫폼', cat:'사이트 리디자인 · Airbnb', year:'2026', frame:'black',
     desc:'숙소 주변 커뮤니티 지도, 이웃처럼 머무는 Temporary Local, 지역과 나누는 상생 생태계로 여행을 관계로 바꿉니다.',
-    tags:['여행','지역상생','지속가능','커뮤니티'], wall:'images/works/02_relink.jpg', full:['images/works/02_relink.jpg'], link:'index.html#p3' },
+    tags:['여행','지역상생','지속가능','커뮤니티'], id:'relink', lead:'여행이 관계가 되는 로컬 라이프 플랫폼', points:['숙소 주변 커뮤니티 지도','이웃처럼 머무는 Temporary Local','지역과 나누는 상생 생태계'], wall:'images/works/02_relink.jpg', full:['images/works/02_relink.jpg'], link:'index.html#p3' },
   { title:'노래한장', sub:'사진 한 장, 이야기가 나만의 노래가 됩니다', cat:'UI/UX', year:'2026', frame:'black',
     desc:'원터치 녹음과 큰 글씨 3단 메뉴, 사진과 이야기로 만드는 AI 노래, QR이 담긴 LP · 포토카드까지 이어지는 시니어 음악 앱입니다.',
-    tags:['커뮤니티','콘텐츠','사용자경험','시니어UX'], wall:'images/works/03_noraehanjang.jpg', full:['images/works/03_noraehanjang.jpg'], link:'index.html#p1' },
+    tags:['커뮤니티','콘텐츠','사용자경험','시니어UX'], id:'noraehanjang', lead:'사진 한 장, 이야기가 나만의 노래가 됩니다', points:['원터치 녹음 · 큰 글씨 3단 메뉴','사진과 이야기로 만드는 AI 노래','QR이 담긴 LP · 포토카드'], wall:'images/works/03_noraehanjang.jpg', full:['images/works/03_noraehanjang.jpg'], link:'index.html#p1' },
   { title:'닥터프릿지', sub:'떠나기 전엔 비우고, 돌아오면 건강하게 채우는 냉장고', cat:'App Design', year:'2026', frame:'white',
     desc:'소비기한 신호등과 임박 알림, 여행 · 환절기 비움 · 채움 모드, 고혈압 · 당뇨 맞춤 장보기를 담은 시니어 식생활 관리 앱입니다.',
-    tags:['건강','소비기한','장보기','시니어'], wall:'images/works/04_drfridge.jpg', full:['images/works/04_drfridge.jpg'], link:'index.html#p2' },
+    tags:['건강','소비기한','장보기','시니어'], id:'drfridge', lead:'떠나기 전엔 비우고, 돌아오면 건강하게 채우는 냉장고', points:['소비기한 신호등 · 임박 알림','여행 · 환절기 비움 · 채움 모드','고혈압 · 당뇨 맞춤 장보기'], wall:'images/works/04_drfridge.jpg', full:['images/works/04_drfridge.jpg'], link:'index.html#p2' },
   { title:'여행 포스터 콜라주', sub:'흩어진 여행 포스터를 폴라로이드처럼 한 장에', cat:'편집 디자인', year:'2026', frame:'white',
     desc:'필이 좋은 여행 · 넷플릭스 포스터, 북촌한옥마을 낮 · 눈 · 밤, K-Discovery 메타버스 투어와 스키장 포스터를 한 장의 콜라주로 엮었습니다.',
-    tags:['포스터','관광홍보','편집디자인','콜라주'], wall:'images/works/05_travel_collage.jpg', full:['images/works/05_travel_collage.jpg'], link:'index.html#p5' },
+    tags:['포스터','관광홍보','편집디자인','콜라주'], id:'collage', lead:'흩어진 여행 포스터를 폴라로이드처럼 한 장에', points:['필이 좋은 여행 · 넷플릭스 포스터','북촌한옥마을 낮 · 눈 · 밤','K-Discovery 메타버스 투어 · 스키장'], wall:'images/works/05_travel_collage.jpg', full:['images/works/05_travel_collage.jpg'], link:'index.html#p5' },
   { title:'묘한친구', sub:'노령묘 보호자를 위한 약 먹이기 솔루션', cat:'브랜딩 · 패키지', year:'2026', frame:'oak',
     desc:'고양이와 슬쩍 숨긴 캡슐을 담은 로고, A4 3단 접지 리플렛, 컬러 코딩 캔 패키지로 이어지는 브랜드입니다.',
-    tags:['브랜딩','패키지','리플렛','시니어반려'], wall:'images/works/06_myohanchingu.jpg', full:['images/works/06_myohanchingu.jpg'], link:'index.html#p6' },
+    tags:['브랜딩','패키지','리플렛','시니어반려'], id:'myohan', lead:'노령묘 보호자를 위한 약 먹이기 솔루션', points:['고양이 + 슬쩍 숨긴 캡슐 로고','A4 3단 접지 리플렛','컬러 코딩 캔 패키지'], wall:'images/works/06_myohanchingu.jpg', full:['images/works/06_myohanchingu.jpg'], link:'index.html#p6' },
 ];
 const DWELL = 9;            // 작품 하나를 비추는 시간(초)
 const WALL_R = 9;           // 1층 원형 벽 반지름(m)
@@ -421,8 +434,6 @@ function updateCard(i){
   $('cYear').textContent = w.year;
   $('cDesc').textContent = w.desc;
   $('cTags').innerHTML = w.tags.map(t=>`<span>#${t}</span>`).join('');
-  const l = $('cLink');
-  if(w.link){ l.href = w.link; l.style.display = 'flex'; } else l.style.display = 'none';
   [...chipsEl.children].forEach((c,k)=>c.classList.toggle('active', k===i));
   chipsEl.children[i].scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
 }
@@ -432,7 +443,12 @@ let lbIndex = -1;
 function openLightbox(i){
   const w = WORKS[i]; lbIndex = i;
   state.tour = false; setTourButton();
-  $('lbTitle').textContent = pad(i)+'  '+w.title;
+  $('lbNo').textContent = noLabel(i);
+  $('lbTitle').textContent = w.title;
+  $('lbLead').textContent = w.lead || w.sub;
+  $('lbPoints').innerHTML = (w.points||[]).map((p,k)=>`<li><b>${k+1}</b><span>${p}</span></li>`).join('');
+  $('lbTags').innerHTML = w.tags.map(t=>`<span>#${t}</span>`).join('');
+  $('lbDesc').textContent = w.desc;
   const show = src=>{ $('lbImg').src = src; [...$('lbThumbs').children].forEach(t=>t.classList.toggle('on', t.dataset.src===src)); };
   $('lbThumbs').innerHTML = w.full.length>1 ? w.full.map(s=>`<img data-src="${s}" src="${s}" alt="">`).join('') : '';
   [...$('lbThumbs').children].forEach(t=>t.onclick=()=>show(t.dataset.src));
@@ -441,7 +457,7 @@ function openLightbox(i){
 }
 function closeLightbox(){ $('lightbox').classList.remove('show'); lbIndex = -1; }
 $('lbClose').onclick = closeLightbox;
-$('lightbox').addEventListener('click', e=>{ if(e.target.id==='lightbox') closeLightbox(); });
+$('lightbox').addEventListener('click', e=>{ if(e.target.id==='lightbox' || e.target.classList.contains('lb-body')) closeLightbox(); });
 $('cZoom').onclick = ()=>{ if(state.index>=0) openLightbox(state.index); };
 
 // ---------------------------------------------------------------- camera director
@@ -544,7 +560,7 @@ renderer.domElement.addEventListener('pointermove', ev=>{
   if(i!==hoverIdx){ if(hoverIdx>=0) pieces[hoverIdx].hover=0; hoverIdx=i; if(i>=0) pieces[i].hover=1; }
   renderer.domElement.style.cursor = i>=0 ? 'pointer' : 'default';
   const tip=$('tip');
-  if(i>=0){ tip.textContent = i===state.index ? '클릭해서 크게 보기' : `${pad(i)} · ${WORKS[i].title}`; tip.style.left=ev.clientX+'px'; tip.style.top=ev.clientY+'px'; tip.style.opacity=1; }
+  if(i>=0){ tip.textContent = i===state.index ? '클릭해서 상세 보기' : `${pad(i)} · ${WORKS[i].title}`; tip.style.left=ev.clientX+'px'; tip.style.top=ev.clientY+'px'; tip.style.opacity=1; }
   else tip.style.opacity=0;
 });
 renderer.domElement.addEventListener('click', ev=>{
@@ -613,6 +629,7 @@ let loaded = 0, failed = 0;
 const btn = $('enter');
 const q = new URLSearchParams(location.search);
 const fromHall = q.get('from')==='hall';
+const workIdx = WORKS.findIndex(w=>w.id===q.get('work'));
 const seat = parseInt(q.get('seat'), 10);
 {
   // 졸업전시장에서 넘겨준 주소가 있으면 그곳으로, 없으면 같은 폴더의 vr_gallery.html로 돌아감
@@ -635,6 +652,12 @@ if(fromHall){
   $('intro').style.transition = 'none'; enter();
   computeWanted(0); cam.a = want.a; cam.r = want.r; cam.h = want.h; camTarget.copy(want.target);
   requestAnimationFrame(()=>requestAnimationFrame(()=>$('fade').classList.remove('on')));
+}
+if(workIdx >= 0){
+  // 홈의 작품 바로가기로 들어온 경우: 입장 화면 없이 그 작품 앞에서 바로 시작
+  if(!fromHall){ $('intro').style.transition = 'none'; enter(); }
+  focusOn(workIdx, true);
+  computeWanted(0); cam.a = want.a; cam.r = want.r; cam.h = want.h; camTarget.copy(want.target);
 }
 Promise.all(loads).then(()=>{
   btn.disabled = false; btn.textContent = '입장하기';
