@@ -598,7 +598,7 @@ renderer.domElement.addEventListener('click', ev=>{
 });
 
 // 학생 전시실로 입장: 카메라가 토르소 쪽으로 다가가며 화면이 빛으로 하얗게 차오른 뒤 이동
-function enterStudent(i){
+function enterStudent(i, flyMs=1400){
   const s = STUDENTS[i];
   if(!s.url || state.mode==='door') return;
   if(state.index !== i) focusOn(i, true);
@@ -611,7 +611,7 @@ function enterStudent(i){
   const pre = document.createElement('link'); pre.rel = 'prefetch'; pre.href = s.url; document.head.appendChild(pre);
   // 전시실의 '졸업전시장' 버튼이 정확히 이 페이지로 돌아오도록 현재 주소를 함께 넘김
   const hall = location.href.split('#')[0].split('?')[0];
-  setTimeout(()=>{ location.href = s.url + (s.url.includes('?') ? '&' : '?') + 'from=hall&seat=' + (i+1) + '&hall=' + encodeURIComponent(hall); }, 1400);
+  setTimeout(()=>{ location.href = s.url + (s.url.includes('?') ? '&' : '?') + 'from=hall&seat=' + (i+1) + '&hall=' + encodeURIComponent(hall); }, flyMs);
 }
 $('cGo').addEventListener('click', e=>{ e.preventDefault(); if(state.index>=0) enterStudent(state.index); });
 // 뒤로 가기로 돌아왔을 때(bfcache) 화면이 하얗게 남지 않도록
@@ -674,7 +674,8 @@ addEventListener('resize', ()=>{
 });
 
 // 폰트가 준비된 뒤 라벨을 그려야 글꼴이 맞게 나옵니다.
-(document.fonts ? Promise.race([document.fonts.ready, new Promise(r=>setTimeout(r,2500))]) : Promise.resolve()).then(()=>{
+const goStraight = new URLSearchParams(location.search).get('enter') === '1';
+(document.fonts ? Promise.race([document.fonts.ready, new Promise(r=>setTimeout(r, goStraight ? 600 : 2500))]) : Promise.resolve()).then(()=>{
   buildPieces();
   addVisitors();
   tick();
@@ -686,6 +687,11 @@ addEventListener('resize', ()=>{
     $('intro').classList.add('hide'); ['top','strip'].forEach(id=>$(id).style.opacity=1);
     state.tour = false; setTourButton(); focusOn(back-1);
     computeWanted(0); cam.a = want.a; cam.r = RING_R - 1.2; cam.h = want.h; camTarget.copy(want.target);
+  } else if(goStraight){
+    // 홈에서 '작품전 보기'로 들어온 경우: 전시장을 내려다본 뒤 곧장 조민영 토르소로 날아가 전시실로 입장
+    $('intro').classList.add('hide');
+    overview(); computeWanted(0); cam.a = want.a; cam.r = want.r; cam.h = want.h; camTarget.copy(want.target);
+    setTimeout(()=>enterStudent(0, 2200), 500);
   } else if(q.has('autostart')) enter();
   window.__vr = { state, cam, camTarget, focusOn, overview, enter, snap(){ computeWanted(0); cam.a=want.a; cam.r=want.r; cam.h=want.h; camTarget.copy(want.target); pieces.forEach(p=>p.lit=0.6); spots.forEach(s=>s.level=s.goal); } };
 });
