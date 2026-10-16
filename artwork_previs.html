@@ -108,6 +108,7 @@ header select.bp{border-color:#8fd3ff;color:#8fd3ff}
     <button id="presetLab" class="primary" style="width:100%;margin-top:7px">🖥 컴퓨터실 배치 만들기</button>
     <div class="row"><label>전시 작품 수</label><input id="galCount" type="number" min="3" max="16" step="1" value="8"></div>
     <button id="presetGallery" class="gold" style="width:100%">🖼 미술관 전시 배치 만들기</button>
+    <button id="hangMinyoung" class="gold" style="width:100%;margin-top:7px" title="미술관 전시 배치를 만들고 조민영 작품 6점과 전시 제목을 벽에 겁니다. 페이지를 열면 이 작품전이 먼저 나오고, 주소 끝에 ?preset=lab 을 붙이면 컴퓨터실 배치로 열립니다">🎨 조민영 작품전 걸기 (6점)</button>
     <p class="hint">벽·문·가구·예시 카메라 동선을 한 번에 만듭니다. 이미 넣은 작품 이미지는 새 배치의 모니터·액자에 순서대로 옮겨집니다. 컴퓨터실에 넣은 작품으로 미술관 전시도 바로 볼 수 있습니다.</p>
   </div>
   <div class="section">
@@ -1376,6 +1377,39 @@ async function fileToArt(f){
   return {img:c.toDataURL('image/jpeg',.9),ar:c.width/c.height};
 }
 function setArt(d,a){d.img=a.img;d.ar=a.ar;rebuildDummy(d)}
+// 조민영 작품전: 저장소의 images/works 이미지를 미술관 액자에 순서대로 건다
+const MINYOUNG_SHOW={
+  title:'images/works/00_title.jpg',
+  works:[
+    {src:'images/works/01_starbucks.jpg',name:'스타벅스 리디자인 · 나만의 취향 기록소'},
+    {src:'images/works/02_relink.jpg',name:'Airbnb Re:Link · 로컬 라이프 플랫폼'},
+    {src:'images/works/03_noraehanjang.jpg',name:'노래한장 · 사진 한 장이 노래가 되는 앱'},
+    {src:'images/works/04_drfridge.jpg',name:'닥터프릿지 · 비움과 채움'},
+    {src:'images/works/05_travel_collage.jpg',name:'여행 포스터 폴라로이드 콜라주'},
+    {src:'images/works/06_myohanchingu.jpg',name:'묘한친구 · 리플렛 & 패키지'}
+  ]
+};
+async function urlToArt(url){
+  const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error(`${url}을(를) 열 수 없습니다`));i.src=url});
+  const ar=img.naturalWidth/img.naturalHeight;
+  // fileToArt와 같은 방식(최대 1600px JPEG)으로 담아 프로젝트 저장에도 들어가게 한다. file://로 열어 캔버스가 막히면 주소를 그대로 쓴다
+  try{
+    const M=1600,k=Math.min(1,M/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');
+    c.width=Math.max(1,Math.round(img.naturalWidth*k));c.height=Math.max(1,Math.round(img.naturalHeight*k));
+    const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
+    return {img:c.toDataURL('image/jpeg',.9),ar};
+  }catch(_){return {img:url,ar}}
+}
+async function hangMinyoungShow(){
+  const works=MINYOUNG_SHOW.works;
+  dummies.forEach(d=>{if(ART_TYPES.includes(d.type))d.img=null}); // 기존 작품을 새 배치로 옮기지 않게 비운다
+  $('#galCount').value=works.length;applyPreset('gallery');
+  const slots=dummies.filter(d=>d.type==='art'),title=slots.find(d=>d.name==='전시 제목'),walls=slots.filter(d=>d!==title);
+  let n=0,bad=0;
+  for(let i=0;i<works.length&&i<walls.length;i++){status.textContent=`조민영 작품 거는 중… ${i+1}/${works.length}`;try{setArt(walls[i],await urlToArt(works[i].src));n++}catch(_){bad++}}
+  if(title){try{setArt(title,await urlToArt(MINYOUNG_SHOW.title))}catch(_){bad++}}
+  afterArtChange(`조민영 작품전 · 작품 ${n}점과 전시 제목을 걸었습니다.${bad?` 열지 못한 이미지 ${bad}개는 건너뛰었습니다.`:''} 예시 동선을 재생해 보세요.`);
+}
 function afterArtChange(msg){refreshDummyLayout();dummies.forEach(retargetFollowers);renderDummyList();renderNodes();scheduleAnalysis();if(blueprint)syncStyle();status.textContent=msg}
 $('#oneArtFile').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';const d=dummies.find(x=>x.id===artTargetId);if(!f||!d)return;
@@ -1500,6 +1534,7 @@ function armPreset(btn,kind){
   setTimeout(()=>{if(btn.dataset.armed){delete btn.dataset.armed;btn.textContent=btn.dataset.label}},4000);
 }
 $('#presetLab').onclick=e=>armPreset(e.currentTarget,'lab');$('#presetGallery').onclick=e=>armPreset(e.currentTarget,'gallery');
+$('#hangMinyoung').onclick=e=>{const b=e.currentTarget;if(b.dataset.armed){delete b.dataset.armed;b.textContent=b.dataset.label;hangMinyoungShow();return}b.dataset.label=b.textContent;b.dataset.armed='1';b.textContent='한 번 더 누르면 지금 배치를 조민영 작품전으로 바꿉니다';setTimeout(()=>{if(b.dataset.armed){delete b.dataset.armed;b.textContent=b.dataset.label}},4000)};
 
 // ---------- 깊이(Depth) 가이드 렌더 ----------
 const depthMat=new THREE.ShaderMaterial({uniforms:{near:{value:.3},far:{value:11}},
@@ -1642,7 +1677,7 @@ const seeds=[
   {p:[4.2,1.5,5.0],t:[0,1.2,0],time:12.0,lens:35},
   {p:[0,1.45,3.2],t:[0,1.2,-1.5],time:24.0,lens:35}
 ];
-seeds.forEach((s,i)=>{const n=newNode(new THREE.Vector3().fromArray(s.p),new THREE.Vector3().fromArray(s.t),s.time);n.name=`C${i+1}`;n.targetName='직접 지정';n.lens=s.lens;n.fov=fovFromLens(s.lens);n.hold=0;nodes.push(n)});counter=seeds.length+1;selectedId=nodes[0].id;$('#duration').value=24;$('#aspect').value='0.5625';$('#videoResolution').value='1080x1920';$('#shotResolution').value='1080x1920';$('#videoFps').value='30';$('#shotInterval').value=4;rebuildHelpers();renderNodes();selectNode(selectedId);$('#timeSlider').max=duration();updateAspect();resize();refreshSplitPreview();initV3();$('#clipLen').value='8';autoShots();gotoTime(0);runAnalysis();$('#aspect').value='1.777777';$('#videoResolution').value='1920x1080';$('#shotResolution').value='1920x1080';updateAspect();applyPreset('lab');lastFrameMs=performance.now();loop(lastFrameMs);
+seeds.forEach((s,i)=>{const n=newNode(new THREE.Vector3().fromArray(s.p),new THREE.Vector3().fromArray(s.t),s.time);n.name=`C${i+1}`;n.targetName='직접 지정';n.lens=s.lens;n.fov=fovFromLens(s.lens);n.hold=0;nodes.push(n)});counter=seeds.length+1;selectedId=nodes[0].id;$('#duration').value=24;$('#aspect').value='0.5625';$('#videoResolution').value='1080x1920';$('#shotResolution').value='1080x1920';$('#videoFps').value='30';$('#shotInterval').value=4;rebuildHelpers();renderNodes();selectNode(selectedId);$('#timeSlider').max=duration();updateAspect();resize();refreshSplitPreview();initV3();$('#clipLen').value='8';autoShots();gotoTime(0);runAnalysis();$('#aspect').value='1.777777';$('#videoResolution').value='1920x1080';$('#shotResolution').value='1920x1080';updateAspect();applyPreset('lab');if(new URLSearchParams(location.search).get('preset')!=='lab')hangMinyoungShow();lastFrameMs=performance.now();loop(lastFrameMs); // 첫 화면은 조민영 작품전, ?preset=lab 이면 컴퓨터실
 </script>
 </body>
 </html>
