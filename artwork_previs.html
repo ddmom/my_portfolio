@@ -108,7 +108,7 @@ header select.bp{border-color:#8fd3ff;color:#8fd3ff}
     <button id="presetLab" class="primary" style="width:100%;margin-top:7px">🖥 컴퓨터실 배치 만들기</button>
     <div class="row"><label>전시 작품 수</label><input id="galCount" type="number" min="3" max="16" step="1" value="8"></div>
     <button id="presetGallery" class="gold" style="width:100%">🖼 미술관 전시 배치 만들기</button>
-    <button id="hangMinyoung" class="gold" style="width:100%;margin-top:7px" title="미술관 전시 배치를 만들고 조민영 작품 6점과 전시 제목을 벽에 겁니다. 주소 끝에 ?exhibit=minyoung 을 붙이면 열자마자 걸립니다">🎨 조민영 작품전 걸기 (6점)</button>
+    <button id="hangMinyoung" class="gold" style="width:100%;margin-top:7px" title="미술관 전시 배치를 만들고 조민영 작품 6점과 전시 제목을 벽에 겁니다. 페이지를 열면 이 작품전이 먼저 나오고, 주소 끝에 ?preset=lab 을 붙이면 컴퓨터실 배치로 열립니다">🎨 조민영 작품전 걸기 (6점)</button>
     <p class="hint">벽·문·가구·예시 카메라 동선을 한 번에 만듭니다. 이미 넣은 작품 이미지는 새 배치의 모니터·액자에 순서대로 옮겨집니다. 컴퓨터실에 넣은 작품으로 미술관 전시도 바로 볼 수 있습니다.</p>
   </div>
   <div class="section">
@@ -1677,7 +1677,7 @@ const seeds=[
   {p:[4.2,1.5,5.0],t:[0,1.2,0],time:12.0,lens:35},
   {p:[0,1.45,3.2],t:[0,1.2,-1.5],time:24.0,lens:35}
 ];
-seeds.forEach((s,i)=>{const n=newNode(new THREE.Vector3().fromArray(s.p),new THREE.Vector3().fromArray(s.t),s.time);n.name=`C${i+1}`;n.targetName='직접 지정';n.lens=s.lens;n.fov=fovFromLens(s.lens);n.hold=0;nodes.push(n)});counter=seeds.length+1;selectedId=nodes[0].id;$('#duration').value=24;$('#aspect').value='0.5625';$('#videoResolution').value='1080x1920';$('#shotResolution').value='1080x1920';$('#videoFps').value='30';$('#shotInterval').value=4;rebuildHelpers();renderNodes();selectNode(selectedId);$('#timeSlider').max=duration();updateAspect();resize();refreshSplitPreview();initV3();$('#clipLen').value='8';autoShots();gotoTime(0);runAnalysis();$('#aspect').value='1.777777';$('#videoResolution').value='1920x1080';$('#shotResolution').value='1920x1080';updateAspect();applyPreset('lab');if(new URLSearchParams(location.search).get('exhibit')==='minyoung')hangMinyoungShow();lastFrameMs=performance.now();loop(lastFrameMs);
+seeds.forEach((s,i)=>{const n=newNode(new THREE.Vector3().fromArray(s.p),new THREE.Vector3().fromArray(s.t),s.time);n.name=`C${i+1}`;n.targetName='직접 지정';n.lens=s.lens;n.fov=fovFromLens(s.lens);n.hold=0;nodes.push(n)});counter=seeds.length+1;selectedId=nodes[0].id;$('#duration').value=24;$('#aspect').value='0.5625';$('#videoResolution').value='1080x1920';$('#shotResolution').value='1080x1920';$('#videoFps').value='30';$('#shotInterval').value=4;rebuildHelpers();renderNodes();selectNode(selectedId);$('#timeSlider').max=duration();updateAspect();resize();refreshSplitPreview();initV3();$('#clipLen').value='8';autoShots();gotoTime(0);runAnalysis();$('#aspect').value='1.777777';$('#videoResolution').value='1920x1080';$('#shotResolution').value='1920x1080';updateAspect();applyPreset('lab');if(new URLSearchParams(location.search).get('preset')!=='lab')hangMinyoungShow();lastFrameMs=performance.now();loop(lastFrameMs); // 첫 화면은 조민영 작품전, ?preset=lab 이면 컴퓨터실
 </script>
 </body>
 </html>
