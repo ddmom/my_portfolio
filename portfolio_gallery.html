@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>조민영 VR 갤러리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16130f;--muted:#6b645b;--glass:rgba(252,250,247,.74);--accent:#b8743a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#e4e1dc;color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif}
+#stage{position:fixed;inset:0}#stage canvas{display:block;width:100%;height:100%}
+button{font:inherit;cursor:pointer;color:inherit}
+.hud{position:fixed;z-index:5;pointer-events:none}.hud>*{pointer-events:auto}
+
+#top{top:0;left:0;right:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 22px;opacity:0;transition:opacity 1.2s}
+#brand .eyebrow{font-size:11px;letter-spacing:.32em;color:#8a5a2e;font-weight:600}
+#brand h1{margin:4px 0 0;font-family:'Gowun Batang',serif;font-size:26px;font-weight:700;text-shadow:0 1px 12px rgba(255,255,255,.8)}
+#controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pill{background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.85);box-shadow:0 4px 18px rgba(60,40,20,.12);border-radius:999px;padding:8px 14px;font-size:12px;font-weight:600;text-decoration:none;color:var(--ink)}
+.pill:hover{border-color:var(--accent)}
+.pill.on{background:#2a211a;color:#fff;border-color:#2a211a}
+
+#card{right:22px;top:50%;width:340px;transform:translate(30px,-50%);opacity:0;pointer-events:none;transition:opacity .6s,transform .6s;
+  background:rgba(252,250,247,.86);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.95);border-radius:16px;padding:22px 22px 20px;box-shadow:0 20px 60px rgba(50,35,20,.22)}
+#card.show{opacity:1;transform:translate(0,-50%);pointer-events:auto}
+#card .no{font-size:12px;letter-spacing:.25em;color:#8a5a2e;font-weight:600}
+#card h2{margin:6px 0 4px;font-family:'Gowun Batang',serif;font-size:27px;line-height:1.3}
+#card .sub{font-size:14px;color:#3b342c;margin-bottom:12px}
+#card .meta{font-size:11px;color:var(--muted);border-top:1px solid rgba(90,70,50,.18);border-bottom:1px solid rgba(90,70,50,.18);padding:8px 0;margin-bottom:12px;display:flex;justify-content:space-between;gap:8px}
+#card p{font-size:13px;line-height:1.75;color:#3b342c;margin:0 0 10px}
+#card .tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px}
+#card .tags span{font-size:11px;padding:3px 8px;border-radius:999px;background:rgba(184,116,58,.12);color:#7a4a20}
+#card .go{display:flex;align-items:center;justify-content:center;width:100%;padding:13px;border-radius:12px;border:0;background:#2a211a;color:#fff;font-weight:600;font-size:14px;text-decoration:none}
+#card .go:hover{background:#45372b}
+#card .go2{margin-top:8px;background:transparent;color:#2a211a;border:1px solid rgba(42,33,26,.3)}
+#card .go2:hover{background:rgba(42,33,26,.06)}
+#card .nav{display:flex;gap:8px;margin-top:10px}
+#card .nav button{flex:1;padding:9px;border-radius:10px;border:1px solid rgba(90,70,50,.25);background:rgba(255,255,255,.6);font-size:12px}
+#progress{height:2px;background:rgba(90,70,50,.15);border-radius:2px;margin-top:14px;overflow:hidden}
+#progress i{display:block;height:100%;width:0;background:var(--accent)}
+
+#strip{left:0;right:0;bottom:0;padding:0 16px 16px;opacity:0;transition:opacity 1.2s}
+#strip .row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:4px 2px;justify-content:safe center}
+#strip .row::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:5px 10px 5px 5px;border-radius:12px;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.9);font-size:12px;color:#3b342c;transition:background .3s,color .3s}
+.chip img{width:26px;height:26px;object-fit:cover;border-radius:7px;background:#ccc}
+.chip:hover{border-color:var(--accent)}
+.chip.active{background:#2a211a;color:#fff;border-color:#2a211a}
+
+#hint{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);font-size:11px;color:#4d453c;background:rgba(255,255,255,.6);padding:5px 12px;border-radius:999px;opacity:0;transition:opacity 1s;pointer-events:none;white-space:nowrap}
+
+#intro{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px;
+  background:radial-gradient(ellipse at 50% 30%,rgba(255,253,249,.6),rgba(228,223,215,.86) 60%,rgba(205,198,188,.96));transition:opacity 1.6s}
+#intro.hide{opacity:0;pointer-events:none}
+#intro .eyebrow{font-size:12px;letter-spacing:.5em;color:#8a5a2e;font-weight:600}
+#intro h1{font-family:'Gowun Batang',serif;font-size:clamp(34px,6vw,62px);margin:14px 0 8px}
+#intro .sub{font-size:14px;color:#4d453c;margin-bottom:34px;line-height:1.8}
+#enter{padding:15px 46px;border-radius:999px;border:1px solid #2a211a;background:#2a211a;color:#fff;font-size:15px;letter-spacing:.2em;box-shadow:0 10px 30px rgba(42,33,26,.3)}
+#enter:disabled{opacity:.55;cursor:wait}
+#enter:not(:disabled):hover{background:#45372b}
+#err{margin-top:18px;font-size:12px;color:#a33;max-width:520px;line-height:1.6}
+
+#fade{position:fixed;inset:0;z-index:30;background:#f4f6f9;opacity:0;pointer-events:none;transition:opacity 1s ease-out}
+#fade.on{opacity:1;pointer-events:auto}
+#fadeMsg{position:absolute;left:0;right:0;top:50%;text-align:center;font-family:'Gowun Batang',serif;font-size:16px;letter-spacing:.1em;color:#6b645b}
+#tip{position:fixed;z-index:6;pointer-events:none;padding:6px 10px;border-radius:8px;background:rgba(42,33,26,.88);color:#fff;font-size:12px;opacity:0;transition:opacity .2s;transform:translate(12px,12px)}
+
+/* 크게 보기 */
+#lightbox{position:fixed;inset:0;z-index:20;background:rgba(20,16,12,.92);display:none;flex-direction:column;align-items:center;justify-content:center;padding:56px 16px 16px}
+#lightbox.show{display:flex}
+#lbImg{max-width:100%;max-height:calc(100% - 90px);object-fit:contain;box-shadow:0 20px 70px rgba(0,0,0,.5);background:#fff}
+#lbThumbs{display:flex;gap:8px;margin-top:14px}
+#lbThumbs img{width:54px;height:54px;object-fit:cover;border-radius:8px;opacity:.5;cursor:pointer;border:2px solid transparent}
+#lbThumbs img.on{opacity:1;border-color:#e9c9a6}
+#lbClose{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;padding:8px 16px;font-size:13px}
+#lbTitle{position:absolute;top:20px;left:20px;color:#f3e8dc;font-family:'Gowun Batang',serif;font-size:18px}
+
+@media (max-width:760px){
+  #top{padding:14px}#brand h1{font-size:19px}#controls .pill{padding:7px 10px;font-size:11px}
+  #card{left:12px;right:12px;width:auto;top:auto;bottom:70px;transform:translateY(30px);padding:16px;max-height:50vh;overflow:auto}
+  #card.show{transform:translateY(0)}
+  #card h2{font-size:21px}#card p{font-size:12px}
+  #strip .row{justify-content:flex-start}
+  #hint{display:none}
+}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<div id="intro">
+  <div class="eyebrow">PORTFOLIO · VR GALLERY</div>
+  <h1>경험과 내일을 잇는 디자인</h1>
+  <div class="sub">조민영의 작업 여섯 점을 원형 갤러리 벽에 걸었습니다.<br>입장하면 카메라가 한 점씩 천천히 비춥니다.</div>
+  <button id="enter" disabled>불러오는 중…</button>
+  <div id="err"></div>
+</div>
+
+<div id="top" class="hud">
+  <div id="brand"><div class="eyebrow">MINYOUNG CHO · VR GALLERY</div><h1>경험과 내일을 잇는 디자인</h1></div>
+  <div id="controls">
+    <a class="pill" id="btnHall" href="vr_gallery.html?return=1">← 졸업전시장</a>
+    <a class="pill" href="index.html">포트폴리오 홈</a>
+    <button class="pill" id="btnOverview">전체 보기</button>
+    <button class="pill on" id="btnTour">자동 투어 ❚❚</button>
+  </div>
+</div>
+
+<div id="card" class="hud">
+  <div class="no" id="cNo">No. 01</div>
+  <h2 id="cTitle">작품명</h2>
+  <div class="sub" id="cSub">한 줄 소개</div>
+  <div class="meta"><span id="cCat">분야</span><span id="cYear">연도</span></div>
+  <p id="cDesc">설명</p>
+  <div class="tags" id="cTags"></div>
+  <button class="go" id="cZoom">작품 크게 보기</button>
+  <a class="go go2" id="cLink" href="#">상세 페이지 →</a>
+  <div class="nav"><button id="cPrev">← 이전 작품</button><button id="cNext">다음 작품 →</button></div>
+  <div id="progress"><i id="progBar"></i></div>
+</div>
+
+<div id="strip" class="hud"><div class="row" id="chips"></div></div>
+<div id="hint">작품을 클릭하면 설명이 열립니다 · 한 번 더 클릭하면 크게 보기 · ← → 이동 · Space 투어 · Esc 전체 보기</div>
+<div id="tip"></div>
+<div id="fade"><div id="fadeMsg"></div></div>
+<script>
+if(/[?&]from=hall/.test(location.search)){ document.getElementById('fade').classList.add('on'); document.getElementById('fadeMsg').textContent='조민영 작가의 전시실로 들어가는 중…'; }
+</script>
+
+<div id="lightbox">
+  <div id="lbTitle"></div>
+  <button id="lbClose">닫기 ✕</button>
+  <img id="lbImg" alt="" />
+  <div id="lbThumbs"></div>
+</div>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"}}</script>
+<script>
+window.addEventListener('error',e=>{const el=document.getElementById('err');if(el)el.textContent='오류: '+(e.message||'알 수 없는 오류')+' · 새로고침 후 다시 시도하세요.';});
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// =====================================================================
+//  전시 작품 목록 — 여기만 고치면 갤러리 전체에 반영됩니다.
+//  intro: true 이면 번호 없이 '인사말' 액자로 걸림
+//  wall : 벽에 거는 이미지,  full : '크게 보기'에서 보여 줄 이미지들 (여러 장이면 넘겨 볼 수 있음)
+//  link : 상세 페이지 주소 (비워 두면 버튼이 숨겨짐)
+//  frame: 액자 색 (black / white / oak)
+// =====================================================================
+const WORKS = [
+  { intro:true, title:'조민영 작품전', sub:'Designing tomorrow from today\'s experience', cat:'Design Exhibition', year:'2026', frame:'black',
+    desc:'경험과 내일을 잇는 디자인. 스타벅스 · Re:Link · 노래한장 · 닥터프릿지 · 여행 포스터 콜라주 · 묘한친구, 여섯 개의 작업을 소개합니다.',
+    tags:['UI/UX','브랜딩','편집디자인'], wall:'images/works/00_title.jpg', full:['images/works/00_title.jpg'], link:'' },
+  { title:'스타벅스 리디자인', sub:'나만의 취향 기록소', cat:'앱 리디자인', year:'2026', frame:'oak',
+    desc:'주문 앱을 넘어, 커피 경험을 기록하는 디지털 아카이브. 큰 글씨와 텍스트 중심 레이아웃, 마신 커피를 기록하는 취향 아카이브, 원두 이야기를 매거진처럼 담았습니다.',
+    tags:['앱리디자인','액티브시니어','에디토리얼','아카이브'], wall:'images/works/01_starbucks.jpg', full:['images/works/01_starbucks.jpg'], link:'index.html#p4' },
+  { title:'Re:Link', sub:'여행이 관계가 되는 로컬 라이프 플랫폼', cat:'사이트 리디자인 · Airbnb', year:'2026', frame:'black',
+    desc:'숙소 주변 커뮤니티 지도, 이웃처럼 머무는 Temporary Local, 지역과 나누는 상생 생태계로 여행을 관계로 바꿉니다.',
+    tags:['여행','지역상생','지속가능','커뮤니티'], wall:'images/works/02_relink.jpg', full:['images/works/02_relink.jpg'], link:'index.html#p3' },
+  { title:'노래한장', sub:'사진 한 장, 이야기가 나만의 노래가 됩니다', cat:'UI/UX', year:'2026', frame:'black',
+    desc:'원터치 녹음과 큰 글씨 3단 메뉴, 사진과 이야기로 만드는 AI 노래, QR이 담긴 LP · 포토카드까지 이어지는 시니어 음악 앱입니다.',
+    tags:['커뮤니티','콘텐츠','사용자경험','시니어UX'], wall:'images/works/03_noraehanjang.jpg', full:['images/works/03_noraehanjang.jpg'], link:'index.html#p1' },
+  { title:'닥터프릿지', sub:'떠나기 전엔 비우고, 돌아오면 건강하게 채우는 냉장고', cat:'App Design', year:'2026', frame:'white',
+    desc:'소비기한 신호등과 임박 알림, 여행 · 환절기 비움 · 채움 모드, 고혈압 · 당뇨 맞춤 장보기를 담은 시니어 식생활 관리 앱입니다.',
+    tags:['건강','소비기한','장보기','시니어'], wall:'images/works/04_drfridge.jpg', full:['images/works/04_drfridge.jpg'], link:'index.html#p2' },
+  { title:'여행 포스터 콜라주', sub:'흩어진 여행 포스터를 폴라로이드처럼 한 장에', cat:'편집 디자인', year:'2026', frame:'white',
+    desc:'필이 좋은 여행 · 넷플릭스 포스터, 북촌한옥마을 낮 · 눈 · 밤, K-Discovery 메타버스 투어와 스키장 포스터를 한 장의 콜라주로 엮었습니다.',
+    tags:['포스터','관광홍보','편집디자인','콜라주'], wall:'images/works/05_travel_collage.jpg', full:['images/works/05_travel_collage.jpg'], link:'index.html#p5' },
+  { title:'묘한친구', sub:'노령묘 보호자를 위한 약 먹이기 솔루션', cat:'브랜딩 · 패키지', year:'2026', frame:'oak',
+    desc:'고양이와 슬쩍 숨긴 캡슐을 담은 로고, A4 3단 접지 리플렛, 컬러 코딩 캔 패키지로 이어지는 브랜드입니다.',
+    tags:['브랜딩','패키지','리플렛','시니어반려'], wall:'images/works/06_myohanchingu.jpg', full:['images/works/06_myohanchingu.jpg'], link:'index.html#p6' },
+];
+const DWELL = 9;            // 작품 하나를 비추는 시간(초)
+const WALL_R = 9;           // 1층 원형 벽 반지름(m)
+const HANG_Y = 1.8;         // 작품 중심 높이
+const MAX_H = 2.0, MAX_W = 3.2;
+
+// ---------------------------------------------------------------- renderer
+const N = WORKS.length;
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.95;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.appendChild(renderer.domElement);
+const maxAniso = renderer.capabilities.getMaxAnisotropy();
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xdcd8d2);
+scene.fog = new THREE.Fog(0xdcd8d2, 26, 60);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(46, innerWidth/innerHeight, 0.1, 120);
+const fitFov = ()=>{ camera.fov = innerWidth <= 760 ? 62 : 46; camera.updateProjectionMatrix(); };  // 세로 화면에서는 넓은 액자가 다 보이도록
+fitFov();
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.3, 0.4, 1.35));
+composer.addPass(new OutputPass());
+
+// ---------------------------------------------------------------- lights
+const hemi = new THREE.HemisphereLight(0xfff8ef, 0x9a9187, 0.75);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff6ea, 1.0);
+sun.position.set(1.5, 20, 1); scene.add(sun);
+
+// 지금 비추는 작품을 따라가는 두 개의 핀 조명 (번갈아 크로스페이드)
+function makeSpot(){
+  const s = new THREE.SpotLight(0xfff1de, 0, 14, 0.36, 0.5, 1.2);
+  s.castShadow = true; s.shadow.mapSize.set(1024,1024); s.shadow.bias = -0.0005;
+  s.shadow.camera.near = 1; s.shadow.camera.far = 14;
+  scene.add(s, s.target);
+  return { light:s, level:0, goal:0 };
+}
+const spots = [makeSpot(), makeSpot()];
+let spotTurn = 0;
+
+// ---------------------------------------------------------------- helpers
+const damp = (a,b,k,dt)=> a + (b-a)*(1-Math.exp(-k*dt));
+const angDiff = (a,b)=>{ let d=(b-a)%(Math.PI*2); if(d>Math.PI)d-=Math.PI*2; if(d<-Math.PI)d+=Math.PI*2; return d; };
+const angleOf = i => i/N*Math.PI*2 + Math.PI/2;
+const radial = (a, r, y=0)=> new THREE.Vector3(Math.cos(a)*r, y, Math.sin(a)*r);
+const rightOf = a => new THREE.Vector3(-Math.sin(a), 0, Math.cos(a)); // 중심에서 벽을 바라볼 때 화면 오른쪽
+// 인사말 액자는 번호 없이, 나머지는 01부터
+const pad = i => WORKS[i].intro ? 'Intro' : String(i + 1 - WORKS.slice(0,i).filter(w=>w.intro).length).padStart(2,'0');
+const noLabel = i => WORKS[i].intro ? 'Intro' : 'No. '+pad(i);
+
+// ---------------------------------------------------------------- architecture
+const VOID_R = 6.9;
+const white = new THREE.MeshStandardMaterial({ color:0xf1efeb, roughness:0.85 });
+const concrete = new THREE.MeshStandardMaterial({ color:0xcbc7c1, roughness:0.95 });
+const led = new THREE.MeshBasicMaterial({ color:new THREE.Color(1.5,1.4,1.25), toneMapped:false });
+const ledWarm = new THREE.MeshBasicMaterial({ color:new THREE.Color(2.2,1.9,1.5), toneMapped:false });
+
+const floor = new THREE.Mesh(new THREE.CircleGeometry(WALL_R, 96),
+  new THREE.MeshStandardMaterial({ color:0xb8b2aa, roughness:0.2, metalness:0.12 }));
+floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
+const centerRing = new THREE.Mesh(new THREE.RingGeometry(2.4, 2.43, 128), new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.7 }));
+centerRing.rotation.x = -Math.PI/2; centerRing.position.y = 0.005; scene.add(centerRing);
+
+// 원형 벽 (작품이 걸리는 면) + 걸레받이 조명
+const wall = new THREE.Mesh(new THREE.CylinderGeometry(WALL_R, WALL_R, 22, 128, 1, true),
+  new THREE.MeshStandardMaterial({ color:0xeeebe6, roughness:0.92, side:THREE.BackSide }));
+wall.position.y = 11; wall.receiveShadow = true; scene.add(wall);
+{
+  const base = new THREE.Mesh(new THREE.TorusGeometry(WALL_R-0.04, 0.02, 6, 220), led);
+  base.rotation.x = Math.PI/2; base.position.y = 0.08; scene.add(base);
+}
+// 위층 원형 발코니
+const LEVELS = [5.2, 9.4, 13.6];
+LEVELS.forEach((y, li)=>{
+  const inner = VOID_R - li*0.4;
+  const slab = new THREE.Mesh(new THREE.RingGeometry(inner, WALL_R, 128), white);
+  slab.rotation.x = -Math.PI/2; slab.position.y = y; scene.add(slab);
+  const under = new THREE.Mesh(new THREE.RingGeometry(inner, WALL_R, 128), concrete);
+  under.rotation.x = Math.PI/2; under.position.y = y-0.55; scene.add(under);
+  const face = new THREE.Mesh(new THREE.CylinderGeometry(inner, inner, 1.75, 128, 1, true), new THREE.MeshStandardMaterial({ color:0xf4f2ef, roughness:0.6, side:THREE.DoubleSide }));
+  face.position.y = y + 0.32; scene.add(face);
+  const s1 = new THREE.Mesh(new THREE.TorusGeometry(inner-0.02, 0.028, 6, 192), led);
+  s1.rotation.x = Math.PI/2; s1.position.y = y - 0.52; scene.add(s1);
+  const s2 = new THREE.Mesh(new THREE.TorusGeometry(inner+0.02, 0.02, 6, 192), led);
+  s2.rotation.x = Math.PI/2; s2.position.y = y + 1.18; scene.add(s2);
+});
+// 천장과 천창
+const OCULUS_R = 2.3, CEIL_Y = 18;
+{
+  const ceil = new THREE.Mesh(new THREE.RingGeometry(OCULUS_R, WALL_R, 128), new THREE.MeshStandardMaterial({ color:0xe8e5e0, roughness:0.9, side:THREE.DoubleSide }));
+  ceil.rotation.x = Math.PI/2; ceil.position.y = CEIL_Y; scene.add(ceil);
+  const sky = new THREE.Mesh(new THREE.CircleGeometry(OCULUS_R, 64), new THREE.MeshBasicMaterial({ color:new THREE.Color(3,3.1,3.3), toneMapped:false }));
+  sky.rotation.x = Math.PI/2; sky.position.y = CEIL_Y + 0.6; scene.add(sky);
+  const lip = new THREE.Mesh(new THREE.CylinderGeometry(OCULUS_R, OCULUS_R, 0.6, 64, 1, true), white);
+  lip.position.y = CEIL_Y + 0.3; scene.add(lip);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(OCULUS_R+0.05, 0.05, 8, 128), led);
+  ring.rotation.x = Math.PI/2; ring.position.y = CEIL_Y - 0.02; scene.add(ring);
+}
+// 천창에서 내려오는 빛 기둥
+const beamUniforms = { uTime:{ value:0 }, uStrength:{ value:1 } };
+function makeBeam(rTop, rBot, k){
+  const m = new THREE.ShaderMaterial({
+    uniforms:{ ...beamUniforms, uK:{ value:k } }, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+    vertexShader:`varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+      void main(){ vUv=uv; vec4 mv=modelViewMatrix*vec4(position,1.); vN=normalize(normalMatrix*normal); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }`,
+    fragmentShader:`varying vec2 vUv; varying vec3 vN; varying vec3 vV; uniform float uTime; uniform float uK; uniform float uStrength;
+      void main(){
+        float facing = pow(abs(dot(vN,vV)), 2.2);
+        float streak = 0.65 + 0.35*sin(vUv.x*70.0 + sin(vUv.x*13.0)*3.0 + uTime*0.25);
+        float vertical = smoothstep(0.0, 0.55, vUv.y) * (0.55 + 0.45*vUv.y);
+        float a = facing * streak * vertical * uK * uStrength;
+        gl_FragColor = vec4(vec3(1.0,0.96,0.9)*a, a);
+      }`
+  });
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(rTop, rBot, CEIL_Y, 64, 1, true), m);
+  mesh.position.y = CEIL_Y/2; mesh.renderOrder = 5; scene.add(mesh);
+}
+makeBeam(OCULUS_R*0.95, OCULUS_R*1.25, 0.10);
+makeBeam(OCULUS_R*0.55, OCULUS_R*0.8, 0.12);
+const dotTex = (()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'); const g=x.createRadialGradient(32,32,0,32,32,32); g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(1,'rgba(255,255,255,0)'); x.fillStyle=g; x.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })();
+{
+  const pool = new THREE.Mesh(new THREE.PlaneGeometry(8.5,8.5), new THREE.MeshBasicMaterial({ map:dotTex, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, opacity:0.4, color:0xfff4e6 }));
+  pool.rotation.x = -Math.PI/2; pool.position.y = 0.01; scene.add(pool);
+}
+const DUST = 600;
+const dustPos = new Float32Array(DUST*3), dustSeed = new Float32Array(DUST);
+for(let i=0;i<DUST;i++){ const r=Math.sqrt(Math.random())*OCULUS_R*1.1, a=Math.random()*Math.PI*2; dustPos[i*3]=Math.cos(a)*r; dustPos[i*3+1]=Math.random()*CEIL_Y; dustPos[i*3+2]=Math.sin(a)*r; dustSeed[i]=Math.random(); }
+const dustGeo = new THREE.BufferGeometry(); dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos,3));
+scene.add(new THREE.Points(dustGeo, new THREE.PointsMaterial({ map:dotTex, size:0.07, transparent:true, opacity:0.8, depthWrite:false, blending:THREE.AdditiveBlending, color:0xfff3e4 })));
+
+// 가운데 감상용 벤치
+{
+  const benchMat = new THREE.MeshStandardMaterial({ color:0x8a6a4c, roughness:0.55 });
+  const legMat = new THREE.MeshStandardMaterial({ color:0x2b2826, roughness:0.4, metalness:0.6 });
+  [0, Math.PI].forEach(a=>{
+    const g = new THREE.Group(); g.position.copy(radial(a+0.4, 3.4)); g.lookAt(0,0,0); scene.add(g);
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.08, 0.5), benchMat); seat.position.y = 0.45; seat.castShadow = seat.receiveShadow = true; g.add(seat);
+    [-0.85, 0.85].forEach(x=>{ const l = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.42, 0.44), legMat); l.position.set(x, 0.21, 0); g.add(l); });
+  });
+}
+
+// ---------------------------------------------------------------- artworks
+const FRAME_STYLE = {
+  black:{ color:0x1d1b19, rough:0.45, metal:0.2 },
+  white:{ color:0xf6f4f0, rough:0.5, metal:0 },
+  oak:  { color:0xb08456, rough:0.6, metal:0 },
+};
+function captionTexture(i){
+  const w = WORKS[i]; const c=document.createElement('canvas'); c.width=480; c.height=300; const x=c.getContext('2d');
+  x.fillStyle='#fbfaf7'; x.fillRect(0,0,480,300);
+  x.fillStyle='#8a5a2e'; x.font='600 26px "Noto Sans KR", sans-serif'; x.fillText(noLabel(i), 30, 52);
+  x.fillStyle='#1f1a15'; x.font='700 40px "Gowun Batang", serif';
+  // 긴 제목은 두 줄로
+  const words = w.title.split(' '); let line='', y=110, lines=0;
+  for(const word of words){ const t = line ? line+' '+word : word; if(x.measureText(t).width > 420 && line){ x.fillText(line, 30, y); y+=46; line=word; lines++; } else line=t; }
+  x.fillText(line, 30, y);
+  x.fillStyle='#5b5249'; x.font='400 24px "Noto Sans KR", sans-serif';
+  x.fillText(w.cat+' · '+w.year, 30, y+50);
+  x.fillText(w.sub, 30, y+84);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=maxAniso; return t;
+}
+function placeholderTexture(i){
+  const c=document.createElement('canvas'); c.width=700; c.height=1000; const x=c.getContext('2d');
+  x.fillStyle='#d9d2c8'; x.fillRect(0,0,700,1000); x.fillStyle='#6b5e50'; x.font='600 44px sans-serif'; x.textAlign='center';
+  x.fillText(WORKS[i].title, 350, 480); x.font='28px sans-serif'; x.fillText('이미지를 불러오지 못했습니다', 350, 540);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;
+}
+
+const pieces = [], pickables = [];
+function buildArtwork(i, tex){
+  const w = WORKS[i];
+  const img = tex.image; const aspect = img.width / img.height;
+  let h = MAX_H, wd = h*aspect; if(wd > MAX_W){ wd = MAX_W; h = wd/aspect; }
+  const a = angleOf(i);
+  const grp = new THREE.Group();
+  // 넓은 액자 모서리가 곡면 벽을 뚫지 않도록 벽에서 조금 더 띄움
+  grp.position.copy(radial(a, WALL_R - 0.09 - (wd*wd)/(8*WALL_R), HANG_Y)); grp.lookAt(0, HANG_Y, 0); scene.add(grp);
+
+  const st = FRAME_STYLE[w.frame] || FRAME_STYLE.black;
+  const border = 0.06, mat = Math.min(wd,h)*0.08;
+  const frame = new THREE.Mesh(new THREE.BoxGeometry(wd+mat*2+border*2, h+mat*2+border*2, 0.06),
+    new THREE.MeshStandardMaterial({ color:st.color, roughness:st.rough, metalness:st.metal }));
+  frame.castShadow = true; frame.receiveShadow = true; grp.add(frame);
+  const matte = new THREE.Mesh(new THREE.PlaneGeometry(wd+mat*2, h+mat*2), new THREE.MeshStandardMaterial({ color:0xfbfaf6, roughness:0.9 }));
+  matte.position.z = 0.031; matte.receiveShadow = true; grp.add(matte);
+  tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = maxAniso;
+  // emissiveMap으로 작품 색이 어두운 조명에서도 살아 있도록 함
+  const artMat = new THREE.MeshStandardMaterial({ map:tex, emissiveMap:tex, emissive:0xffffff, emissiveIntensity:0.2, roughness:0.55 });
+  const art = new THREE.Mesh(new THREE.PlaneGeometry(wd, h), artMat);
+  art.position.z = 0.033; grp.add(art);
+
+  // 작품 설명 캡션 (오른쪽 아래)
+  const cap = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.25), new THREE.MeshStandardMaterial({ map:captionTexture(i), roughness:0.8, emissive:0xffffff, emissiveMap:null, emissiveIntensity:0 }));
+  const capX = (wd/2 + mat + border) + 0.38;
+  cap.position.set(capX, -0.35, 0.01);   // 관람자 기준 오른쪽
+  grp.add(cap);
+  cap.material.map.needsUpdate = true;
+
+  // 액자 위 픽처 라이트
+  const lampMat = new THREE.MeshStandardMaterial({ color:0x2a2622, metalness:0.7, roughness:0.35 });
+  const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, Math.min(wd*0.7, 1.1), 12), lampMat);
+  lamp.rotation.z = Math.PI/2; lamp.position.set(0, h/2+mat+border+0.2, 0.16); grp.add(lamp);
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.02, 0.16), lampMat);
+  arm.position.set(0, h/2+mat+border+0.2, 0.08); grp.add(arm);
+  const bulbMat = new THREE.MeshBasicMaterial({ color:new THREE.Color(2.4,2.0,1.5), toneMapped:false, transparent:true, opacity:0.4 });
+  const bulb = new THREE.Mesh(new THREE.BoxGeometry(Math.min(wd*0.66, 1.05), 0.01, 0.03), bulbMat);
+  bulb.position.set(0, h/2+mat+border+0.175, 0.17); grp.add(bulb);
+  // 벽에 번지는 빛 (가짜 글로우)
+  const wash = new THREE.Mesh(new THREE.PlaneGeometry(wd*1.9, h*1.5), new THREE.MeshBasicMaterial({ map:dotTex, color:0xfff0dc, transparent:true, opacity:0, depthWrite:false, blending:THREE.AdditiveBlending }));
+  wash.position.set(0, 0.15, -0.02); grp.add(wash);
+
+  [frame, art, matte, cap].forEach(m=>{ m.userData.index = i; pickables.push(m); });
+  pieces[i] = { grp, artMat, bulbMat, wash, cap, lit:0.5, hover:0, w:wd, h };
+}
+
+// ---------------------------------------------------------------- UI
+const $ = id=>document.getElementById(id);
+const chipsEl = $('chips');
+WORKS.forEach((w,i)=>{
+  const b=document.createElement('button'); b.className='chip';
+  b.innerHTML=`<img src="${w.wall}" alt="" loading="lazy">${pad(i)} ${w.title}`;
+  b.onclick=()=>focusOn(i, true);
+  chipsEl.appendChild(b);
+});
+function updateCard(i){
+  const w = WORKS[i];
+  $('cNo').textContent = noLabel(i);
+  $('cTitle').textContent = w.title;
+  $('cSub').textContent = w.sub;
+  $('cCat').textContent = w.cat;
+  $('cYear').textContent = w.year;
+  $('cDesc').textContent = w.desc;
+  $('cTags').innerHTML = w.tags.map(t=>`<span>#${t}</span>`).join('');
+  const l = $('cLink');
+  if(w.link){ l.href = w.link; l.style.display = 'flex'; } else l.style.display = 'none';
+  [...chipsEl.children].forEach((c,k)=>c.classList.toggle('active', k===i));
+  chipsEl.children[i].scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+}
+
+// 크게 보기
+let lbIndex = -1;
+function openLightbox(i){
+  const w = WORKS[i]; lbIndex = i;
+  state.tour = false; setTourButton();
+  $('lbTitle').textContent = pad(i)+'  '+w.title;
+  const show = src=>{ $('lbImg').src = src; [...$('lbThumbs').children].forEach(t=>t.classList.toggle('on', t.dataset.src===src)); };
+  $('lbThumbs').innerHTML = w.full.length>1 ? w.full.map(s=>`<img data-src="${s}" src="${s}" alt="">`).join('') : '';
+  [...$('lbThumbs').children].forEach(t=>t.onclick=()=>show(t.dataset.src));
+  show(w.full[0]);
+  $('lightbox').classList.add('show');
+}
+function closeLightbox(){ $('lightbox').classList.remove('show'); lbIndex = -1; }
+$('lbClose').onclick = closeLightbox;
+$('lightbox').addEventListener('click', e=>{ if(e.target.id==='lightbox') closeLightbox(); });
+$('cZoom').onclick = ()=>{ if(state.index>=0) openLightbox(state.index); };
+
+// ---------------------------------------------------------------- camera director
+const state = { mode:'intro', index:-1, tour:true, shotT:0, time:0 };
+const cam = { a: Math.PI*0.9, r: 6.5, h: 15 };
+const camTarget = new THREE.Vector3(0, 0, 0);
+const want = { a:0, r:0, h:0, target:new THREE.Vector3() };
+const mouse = new THREE.Vector2(), mouseSmooth = new THREE.Vector2();
+let overviewA = 0;
+
+function setTourButton(){ const b=$('btnTour'); b.classList.toggle('on', state.tour); b.textContent = state.tour ? '자동 투어 ❚❚' : '자동 투어 ▶'; }
+function focusOn(i, manual=false){
+  i = (i + N) % N;
+  if(manual){ state.tour = false; setTourButton(); }
+  if(i !== state.index){
+    state.index = i; state.shotT = 0;
+    spotTurn ^= 1;
+    spots.forEach((s,k)=>{ s.goal = k===spotTurn ? 1 : 0; });
+    const sp = spots[spotTurn].light, a = angleOf(i);
+    sp.position.copy(radial(a, WALL_R-3.4, 4.5));
+    sp.target.position.copy(radial(a, WALL_R, HANG_Y));
+  }
+  state.mode = 'focus';
+  updateCard(i); $('card').classList.add('show');
+}
+function overview(){
+  // 카메라가 현재 보고 있는 방향의 반대편 벽부터 둘러보기 시작
+  overviewA = Math.atan2(camera.position.z, camera.position.x);
+  state.mode = 'overview'; state.index = -1; state.shotT = 0;
+  spots.forEach(s=>s.goal=0);
+  $('card').classList.remove('show');
+  [...chipsEl.children].forEach(c=>c.classList.remove('active'));
+}
+
+function computeWanted(dt){
+  const t = state.time, narrow = innerWidth <= 760, wide = innerWidth > 1000;
+  if(state.mode==='intro'){
+    want.a = Math.PI*0.9 + t*0.03; want.r = 6.5; want.h = 15; want.target.set(0,0,0);
+  } else if(state.mode==='overview'){
+    // 빛기둥 옆에서 맞은편 벽을 바라보며 천천히 한 바퀴
+    overviewA += dt*0.05;
+    want.a = overviewA; want.r = 1.2; want.h = 2.2;
+    want.target.copy(radial(overviewA+Math.PI, WALL_R, 1.75));
+  } else {
+    const a = angleOf(state.index);
+    const sway = -0.1*Math.cos(state.shotT*Math.PI/DWELL);   // 작품 앞을 왼쪽→오른쪽으로 천천히 지나감
+    want.a = a + sway; want.r = WALL_R - 5.9; want.h = 1.62 + 0.08*Math.sin(state.shotT*0.4);
+    want.target.copy(radial(a, WALL_R, HANG_Y));
+    if(wide) want.target.addScaledVector(rightOf(a), 1.15);  // 오른쪽 카드에 가리지 않도록 작품을 왼쪽에
+    if(narrow){ want.a = a + sway*0.3; want.r = 0.4; want.h = 1.5; want.target.y -= 1.7; }  // 모바일: 세로 화면에 액자가 다 들어오도록 물러서고, 하단 카드 위로 작품을 올림
+  }
+}
+function updateCamera(dt){
+  computeWanted(dt);
+  const k = state.mode==='focus' ? 0.9 : (state.mode==='overview' ? 0.6 : 2);
+  cam.a += angDiff(cam.a, want.a) * (1-Math.exp(-k*dt));
+  cam.r = damp(cam.r, want.r, k, dt);
+  cam.h = damp(cam.h, want.h, k*0.85, dt);
+  camTarget.x = damp(camTarget.x, want.target.x, k*1.3, dt);
+  camTarget.y = damp(camTarget.y, want.target.y, k*1.3, dt);
+  camTarget.z = damp(camTarget.z, want.target.z, k*1.3, dt);
+  mouseSmooth.x = damp(mouseSmooth.x, mouse.x, 2, dt); mouseSmooth.y = damp(mouseSmooth.y, mouse.y, 2, dt);
+  camera.position.set(Math.cos(cam.a)*cam.r, cam.h, Math.sin(cam.a)*cam.r);
+  const look = camTarget.clone();
+  const right = new THREE.Vector3().subVectors(look, camera.position).cross(camera.up).normalize();
+  look.addScaledVector(right, mouseSmooth.x*0.3).add(new THREE.Vector3(0, mouseSmooth.y*0.2, 0));
+  camera.lookAt(look);
+}
+
+function updateLighting(dt){
+  const focus = state.mode==='focus';
+  hemi.intensity = damp(hemi.intensity, focus ? 0.42 : 0.75, 1.2, dt);
+  sun.intensity = damp(sun.intensity, focus ? 0.5 : 1.0, 1.2, dt);
+  spots.forEach(s=>{ s.level = damp(s.level, s.goal, s.goal ? 1.1 : 1.6, dt); s.light.intensity = s.level*11; s.light.visible = s.level>0.01; });
+  beamUniforms.uStrength.value = damp(beamUniforms.uStrength.value, focus ? 0.7 : 1.0, 1, dt);
+  pieces.forEach((pc,i)=>{
+    if(!pc) return;
+    const goal = state.mode==='intro' ? 0.4 : (state.mode==='overview' ? 0.65 : (i===state.index ? 1 : 0.25));
+    pc.lit = damp(pc.lit, Math.max(goal, pc.hover ? 0.85 : 0), 2, dt);
+    pc.artMat.emissiveIntensity = 0.06 + pc.lit*0.14;
+    pc.bulbMat.opacity = 0.15 + pc.lit*0.85;
+    pc.wash.material.opacity = pc.lit*0.1;
+  });
+}
+
+// ---------------------------------------------------------------- picking
+const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2();
+let hoverIdx = -1;
+function pick(ev){
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set(((ev.clientX-r.left)/r.width)*2-1, -((ev.clientY-r.top)/r.height)*2+1);
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObjects(pickables, false)[0];
+  return hit ? hit.object.userData.index : -1;
+}
+renderer.domElement.addEventListener('pointermove', ev=>{
+  mouse.set((ev.clientX/innerWidth)*2-1, -(ev.clientY/innerHeight)*2+1);
+  if(state.mode==='intro') return;
+  const i = pick(ev);
+  if(i!==hoverIdx){ if(hoverIdx>=0) pieces[hoverIdx].hover=0; hoverIdx=i; if(i>=0) pieces[i].hover=1; }
+  renderer.domElement.style.cursor = i>=0 ? 'pointer' : 'default';
+  const tip=$('tip');
+  if(i>=0){ tip.textContent = i===state.index ? '클릭해서 크게 보기' : `${pad(i)} · ${WORKS[i].title}`; tip.style.left=ev.clientX+'px'; tip.style.top=ev.clientY+'px'; tip.style.opacity=1; }
+  else tip.style.opacity=0;
+});
+renderer.domElement.addEventListener('click', ev=>{
+  if(state.mode==='intro') return;
+  const i = pick(ev);
+  if(i<0) return;
+  if(i===state.index) openLightbox(i);   // 이미 비추고 있는 작품은 한 번 더 클릭하면 크게 보기
+  else focusOn(i, true);
+});
+
+$('btnOverview').onclick = ()=>overview();
+$('btnTour').onclick = ()=>{ state.tour = !state.tour; setTourButton(); if(state.tour && state.mode!=='focus') focusOn(0); };
+$('cPrev').onclick = ()=>focusOn(state.index-1, true);
+$('cNext').onclick = ()=>focusOn(state.index+1, true);
+addEventListener('keydown', e=>{
+  if(state.mode==='intro') return;
+  if(lbIndex>=0){ if(e.key==='Escape') closeLightbox(); return; }
+  if(e.key==='ArrowRight') focusOn((state.index<0?-1:state.index)+1, true);
+  else if(e.key==='ArrowLeft') focusOn((state.index<0?1:state.index)-1, true);
+  else if(e.key==='Escape') overview();
+  else if(e.key===' '){ e.preventDefault(); $('btnTour').click(); }
+});
+
+function enter(){
+  $('intro').classList.add('hide');
+  ['top','strip','hint'].forEach(id=>$(id).style.opacity=1);
+  setTimeout(()=>{ $('hint').style.opacity=0; }, 9000);
+  overview();
+  setTimeout(()=>{ if(state.tour && state.mode==='overview') focusOn(0); }, 8000);
+}
+$('enter').onclick = enter;
+
+// ---------------------------------------------------------------- loop
+const clock = new THREE.Clock();
+function tick(){
+  const dt = Math.min(clock.getDelta(), 0.05);
+  state.time += dt;
+  if(state.mode==='focus' && lbIndex<0){
+    state.shotT += dt;
+    $('progBar').style.width = (state.tour ? Math.min(100, state.shotT/DWELL*100) : 0)+'%';
+    if(state.tour && state.shotT >= DWELL){
+      if(state.index === N-1){ overview(); setTimeout(()=>{ if(state.tour && state.mode==='overview') focusOn(0); }, 12000); }
+      else focusOn(state.index+1);
+    }
+  }
+  beamUniforms.uTime.value = state.time;
+  const pa = dustGeo.attributes.position;
+  for(let i=0;i<DUST;i++){
+    let y = pa.getY(i) - dt*(0.08+dustSeed[i]*0.12); if(y<0) y += CEIL_Y;
+    pa.setY(i, y); pa.setX(i, pa.getX(i) + Math.sin(state.time*0.4 + dustSeed[i]*30)*dt*0.03);
+  }
+  pa.needsUpdate = true;
+  updateCamera(dt);
+  updateLighting(dt);
+  composer.render();
+  requestAnimationFrame(tick);
+}
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight; fitFov();
+  renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight);
+});
+
+// ---------------------------------------------------------------- load
+const loader = new THREE.TextureLoader();
+let loaded = 0, failed = 0;
+const btn = $('enter');
+const q = new URLSearchParams(location.search);
+const fromHall = q.get('from')==='hall';
+const seat = parseInt(q.get('seat'), 10);
+{
+  // 졸업전시장에서 넘겨준 주소가 있으면 그곳으로, 없으면 같은 폴더의 vr_gallery.html로 돌아감
+  let hall = 'vr_gallery.html';
+  try { const h = new URL(q.get('hall') || '', location.href); if(q.get('hall') && h.origin === location.origin) hall = h.href; } catch(e){}
+  $('btnHall').href = hall + '?return=' + (seat >= 1 ? seat : 1);
+}
+tick();
+
+// 이미지가 하나씩 도착하는 대로 바로 벽에 겁니다 (전체를 기다리지 않음)
+const loads = WORKS.map((w,i)=>new Promise(res=>{
+  loader.load(w.wall, tex=>{ buildArtwork(i, tex); loaded++; if(btn.disabled) btn.textContent = `불러오는 중… ${loaded}/${N}`; res(); },
+    undefined, ()=>{ failed++; buildArtwork(i, placeholderTexture(i)); res(); });
+}));
+// 글꼴은 기다리지 않고, 준비되면 캡션만 다시 그림
+if(document.fonts) document.fonts.ready.then(()=>pieces.forEach((pc,i)=>{ if(pc){ pc.cap.material.map.dispose(); pc.cap.material.map = captionTexture(i); } }));
+
+if(fromHall){
+  // 졸업전시장 토르소를 통해 들어온 경우: 기다리지 않고 바로 1층에서 시작하며 빛이 걷힘
+  $('intro').style.transition = 'none'; enter();
+  computeWanted(0); cam.a = want.a; cam.r = want.r; cam.h = want.h; camTarget.copy(want.target);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>$('fade').classList.remove('on')));
+}
+Promise.all(loads).then(()=>{
+  btn.disabled = false; btn.textContent = '입장하기';
+  if(failed && location.protocol==='file:')
+    $('err').textContent = '파일을 더블클릭해서 열면 브라우저 보안 때문에 작품 이미지가 보이지 않습니다. GitHub Pages에 올리거나, 폴더에서 python -m http.server 실행 후 http://localhost:8000/portfolio_gallery.html 로 열어 주세요.';
+  if(!fromHall && q.has('autostart')) enter();
+  window.__vr = { state, pieces, camera, scene, focusOn, overview, enter, snap(){ computeWanted(0); cam.a=want.a; cam.r=want.r; cam.h=want.h; camTarget.copy(want.target); pieces.forEach(p=>p&&(p.lit=0.6)); spots.forEach(s=>s.level=s.goal); } };
+});
+</script>
+</body>
+</html>
