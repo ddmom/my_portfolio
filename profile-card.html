@@ -138,6 +138,12 @@
 
 <div class="wrap">
   <form id="f" autocomplete="off">
+    <div class="import">
+      <label class="pick" for="import-file" style="border-style:solid">
+        <span class="txt"><b>저장한 파일 불러오기</b><small id="import-note">예전에 「파일로 저장 (.json)」한 카드를 다시 열어요</small></span>
+        <input type="file" id="import-file" accept=".json,application/json">
+      </label>
+    </div>
     <fieldset>
       <legend>나에 대해</legend>
       <label>이름<input type="text" id="name" name="name" placeholder="홍길동"></label>
@@ -277,7 +283,7 @@ async function fileToDataUrl(file) {
   return file.type === 'image/png' ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.88);
 }
 
-document.querySelectorAll('.pick input[type=file]').forEach((inp) => {
+document.querySelectorAll('.pick input[type=file][data-key]').forEach((inp) => {
   inp.addEventListener('change', async () => {
     const file = inp.files[0]; if (!file) return;
     const key = inp.dataset.key;
@@ -508,6 +514,35 @@ $('#fig-file').addEventListener('click', async () => {
   } catch (e) {
     figOk(e && e.code === 'declined' ? '저장을 취소했어요.' : '여기서는 파일 저장이 안 돼요. "Figma용으로 복사"를 써 주세요.');
   }
+});
+
+// ---------- 저장한 .json 다시 불러오기 ----------
+$('#import-file').addEventListener('change', async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const note = $('#import-note');
+  try {
+    const data = JSON.parse(await f.text());
+    const p = (Array.isArray(data) ? data : data.profiles)[0];
+    if (!p) throw new Error('empty');
+    const s = (v) => (typeof v === 'string' ? v : '');
+    Object.assign(state, {
+      name: s(p.name), intro: s(p.intro), portfolio: s(p.portfolio), designConcept: s(p.designConcept),
+      photo2d: s(p.photo2d), bust2d: s(p.bust2d), bust3d: s(p.bust3d),
+    });
+    [1, 2, 3, 4].forEach((i) => {
+      state['work' + i + 'img'] = s(p['work' + i]).startsWith('data:image/') ? p['work' + i] : '';
+      state['work' + i + 'title'] = s(p['work' + i + 'Title']);
+      state['work' + i + 'desc'] = s(p['work' + i + 'Desc']);
+    });
+    IMG_KEYS.forEach((k) => { if (!s(state[k]).startsWith('data:image/')) state[k] = ''; });
+    textFields.forEach((el) => (el.value = state[el.name] || ''));
+    IMG_KEYS.forEach((k) => ($('#fname-' + k).textContent = state[k] ? '불러온 사진' : '사진 선택 (JPG · PNG)'));
+    syncPickers(); render(); save();
+    note.textContent = (state.name || '이름 없음') + ' 카드를 불러왔어요.';
+  } catch (err) {
+    note.textContent = '이 파일은 읽을 수 없어요. 「파일로 저장 (.json)」으로 만든 파일을 골라 주세요.';
+  }
+  e.target.value = '';
 });
 
 load(); syncPickers(); render();
