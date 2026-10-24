@@ -1,0 +1,515 @@
+<title>프로필 카드 메이커</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Noto+Sans+KR:wght@400;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  /* Layout: 왼쪽 입력 폼(고정 폭) + 오른쪽 실시간 카드 미리보기, 좁은 화면에서는 위아래로 */
+  :root {
+    --bg: #f3f5f8;
+    --panel: #ffffff;
+    --fg: #1b1d22;
+    --muted: #697080;
+    --line: #dde2ea;
+    --accent: #1593e6;
+    --accent-fg: #ffffff;
+    --field: #ffffff;
+    --danger: #c9372c;
+    /* 카드 자체는 항상 흰 종이 — 테마와 무관하게 고정 */
+    --card-bg: #ffffff;
+    --card-fg: #1a1a1f;
+    --card-sub: #73737f;
+    --card-accent: #17a1fa;
+    --card-ph: #ebebf0;
+    --ui: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --card-font: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171c; --panel: #1c2027; --fg: #e8eaee; --muted: #9aa2b1; --line: #2e343e;
+      --accent: #4fb3f6; --accent-fg: #0b1620; --field: #232831; --danger: #ff7b6e; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171c; --panel: #1c2027; --fg: #e8eaee; --muted: #9aa2b1; --line: #2e343e;
+    --accent: #4fb3f6; --accent-fg: #0b1620; --field: #232831; --danger: #ff7b6e; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--ui); font-size: 14px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 96px;
+  }
+  .wrap { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 24px; align-items: start; }
+  header.top { max-width: 1320px; margin: 0 auto 16px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+  header.top h1 { font-size: 20px; margin: 0; font-weight: 600; }
+  header.top p { margin: 0; color: var(--muted); }
+
+  form { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 18px; }
+  fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; min-width: 0; }
+  legend { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--accent); padding: 0; margin-bottom: 4px; }
+  label { display: grid; gap: 4px; font-weight: 500; font-size: 13px; }
+  input[type=text], input[type=url], textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--field); color: var(--fg); font: inherit; font-weight: 400;
+  }
+  textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
+  input:focus-visible, textarea:focus-visible, button:focus-visible, .pick:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .pick { display: flex; align-items: center; gap: 10px; border: 1px dashed var(--line); border-radius: 8px; padding: 8px; cursor: pointer; background: var(--field); }
+  .pick input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .pick .thumb { width: 44px; height: 44px; border-radius: 6px; background: var(--line) center/cover no-repeat; flex: none; }
+  .pick .txt { display: grid; gap: 2px; min-width: 0; }
+  .pick .txt b { font-weight: 500; }
+  .pick .txt small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pick .x { margin-left: auto; border: 0; background: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px 8px; }
+
+  .work { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 8px; }
+  .work-h { font-weight: 600; font-size: 13px; }
+
+  .row-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  button.primary { background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 8px; padding: 11px 16px; font: inherit; font-weight: 600; cursor: pointer; }
+  button.ghost { background: none; border: 1px solid var(--line); color: var(--fg); border-radius: 8px; padding: 10px 14px; font: inherit; cursor: pointer; }
+  button.ghost.armed { border-color: var(--danger); color: var(--danger); }
+  .note { color: var(--muted); font-size: 12px; margin: 0; line-height: 1.5; }
+
+  .preview { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 12px; min-width: 0; }
+  .preview-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .preview-h span { color: var(--muted); font-size: 12px; }
+  .stage { position: relative; overflow: hidden; border-radius: 14px; }
+  .stage .card { position: absolute; top: 0; left: 0; transform-origin: top left; }
+
+  /* ---------- 카드 (Figma 플러그인과 같은 디자인, 1200px 기준) ---------- */
+  .card {
+    width: 1200px; padding: 48px; display: flex; flex-direction: column; gap: 40px;
+    background: var(--card-bg); color: var(--card-fg); font-family: var(--card-font);
+    border-radius: 32px; box-shadow: 0 8px 32px rgba(0,0,0,.08);
+  }
+  .c-head { display: flex; align-items: center; gap: 32px; }
+  .c-photo { width: 200px; height: 200px; border-radius: 50%; flex: none; }
+  .c-info { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .c-name { font-size: 44px; font-weight: 700; line-height: 1.25; }
+  .c-intro { font-size: 18px; line-height: 1.6; color: var(--card-sub); white-space: pre-wrap; }
+  .c-busts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .c-bust { height: 648px; border-radius: 20px; }
+  .c-label { font-size: 14px; font-weight: 700; color: var(--card-accent); margin-bottom: 10px; letter-spacing: .02em; }
+  .c-works { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
+  .c-work-img { aspect-ratio: 1; border-radius: 16px; }
+  .c-work-t { font-size: 16px; font-weight: 700; margin-top: 12px; }
+  .c-work-d { font-size: 15px; line-height: 1.5; color: var(--card-sub); margin-top: 6px; white-space: pre-wrap; }
+  .c-text { font-size: 18px; line-height: 1.6; white-space: pre-wrap; }
+  .c-link { font-size: 18px; color: var(--card-accent); text-decoration: underline; word-break: break-all; }
+  .img { background: var(--card-ph) center / cover no-repeat; display: flex; align-items: center; justify-content: center; color: var(--card-sub); font-size: 14px; }
+  .img.has { color: transparent; }
+  .hint { color: #b4b4bd; }
+
+  /* 저장 화면 */
+  .sheet { position: fixed; inset: 0; background: rgba(10,12,16,.6); display: flex; align-items: center; justify-content: center; z-index: 20;
+    padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+  .sheet-box { background: var(--panel); color: var(--fg); border-radius: 14px; padding: 18px; width: min(760px, 100%); max-height: 100%; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+  .sheet-box h2 { margin: 0; font-size: 17px; }
+  .sheet-img { background: var(--bg); border: 2px solid var(--accent); border-radius: 10px; padding: 10px; display: flex; justify-content: center; }
+  .sheet-img img { display: block; max-width: 100%; max-height: calc(100vh - 480px); min-height: 160px; width: auto; height: auto; object-fit: contain; }
+  .ways { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .ways li { display: grid; gap: 6px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .ways b { font-weight: 600; }
+  .ways .note b { color: var(--fg); }
+  .ok { color: var(--accent); font-weight: 600; font-size: 13px; margin: 0; }
+  .sheet[hidden] { display: none; }
+  .offscreen { position: fixed; left: -100000px; top: 0; }
+
+  .mobile-bar { display: none; }
+  @media (max-width: 900px) {
+    .wrap { grid-template-columns: minmax(0, 1fr); }
+    .preview { position: static; }
+    .mobile-bar { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--panel); border-top: 1px solid var(--line);
+      padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+    .mobile-bar button { width: 100%; }
+  }
+  @media (prefers-reduced-motion: no-preference) { button { transition: filter .15s; } button:hover { filter: brightness(1.05); } }
+</style>
+
+<header class="top">
+  <h1>프로필 카드 메이커</h1>
+  <p>왼쪽에 입력하면 오른쪽 카드에 바로 반영되고, 완성되면 이미지로 저장할 수 있어요.</p>
+</header>
+
+<div class="wrap">
+  <form id="f" autocomplete="off">
+    <fieldset>
+      <legend>나에 대해</legend>
+      <label>이름<input type="text" id="name" name="name" placeholder="홍길동"></label>
+      <label>자기소개<textarea id="intro" name="intro" placeholder="어떤 디자이너인지 2~3문장으로 소개해 주세요"></textarea></label>
+      <div id="pick-photo2d"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>흉상</legend>
+      <div id="pick-bust2d"></div>
+      <div id="pick-bust3d"></div>
+      <p class="note">3D 흉상은 3D 파일이 아니라 렌더링하거나 캡처한 이미지(JPG·PNG)를 올려 주세요.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>작품 (최대 4개)</legend>
+      <div id="works" style="display:grid;gap:10px"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>디자인 컨셉 · 포트폴리오</legend>
+      <label>디자인 컨셉<textarea id="designConcept" name="designConcept"></textarea></label>
+      <label>포트폴리오 주소<input type="url" id="portfolio" name="portfolio" placeholder="https://"></label>
+    </fieldset>
+
+    <div class="row-btns">
+      <button type="button" class="primary" id="export">카드 이미지 만들기</button>
+      <button type="button" class="ghost" id="to-figma">Figma로 보내기</button>
+      <button type="button" class="ghost" id="clear">입력 지우기</button>
+    </div>
+    <p class="note" id="save-note">입력한 내용은 이 브라우저에 자동 저장돼요.</p>
+  </form>
+
+  <section class="preview" aria-label="카드 미리보기">
+    <div class="preview-h"><strong>미리보기</strong><span>회색 글씨는 안내 문구라 저장할 때 빠져요</span></div>
+    <div class="stage" id="stage"><div class="card" id="card"></div></div>
+  </section>
+</div>
+
+<div class="mobile-bar"><button type="button" class="primary" id="export-m">카드 이미지 만들기</button></div>
+
+<div class="sheet" id="fsheet" hidden>
+  <div class="sheet-box" role="dialog" aria-modal="true" aria-labelledby="fsheet-t">
+    <h2 id="fsheet-t">Figma로 보내기</h2>
+    <p class="note" style="margin:0">이 카드의 글과 사진을 Figma 플러그인 <b>Profile Card Maker</b>로 옮겨요. Figma에서는 글자와 사진을 고칠 수 있는 카드로 만들어져요.</p>
+    <ul class="ways">
+      <li>
+        <b>1단계 · 카드 내용 복사하기</b>
+        <div class="row-btns">
+          <button type="button" class="primary" id="fig-copy">Figma용으로 복사</button>
+          <button type="button" class="ghost" id="fig-file">파일로 저장 (.json)</button>
+        </div>
+        <p class="ok" id="fig-ok" hidden></p>
+        <p class="note">복사가 안 되면 파일로 저장해서 플러그인에서 그 파일을 선택하면 돼요.<br>
+          <b>다른 사람에게 카드를 보내는 경우:</b> 「파일로 저장 (.json)」을 누르고, 저장된 파일을 카카오톡이나 메일로 보내 주세요.</p>
+      </li>
+      <li>
+        <b>2단계 · Figma에서 붙여넣기</b>
+        <p class="note">Figma 데스크톱 앱 → Plugins → Development → <b>Profile Card Maker</b> 실행<br>
+          → <b>웹페이지에서 가져오기</b> 탭 → 입력칸을 누르고 <b>Ctrl+V</b>(맥은 <b>⌘+V</b>), 또는 저장한 파일 선택<br>
+          → <b>Figma에 카드 만들기</b></p>
+      </li>
+    </ul>
+    <div class="row-btns" style="justify-content:flex-end"><button type="button" class="primary" id="fsheet-close">닫기</button></div>
+  </div>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-box" role="dialog" aria-modal="true" aria-labelledby="sheet-t">
+    <h2 id="sheet-t">카드 이미지가 완성됐어요</h2>
+    <div class="sheet-img" id="sheet-img"></div>
+    <ul class="ways">
+      <li id="way-download">
+        <b>파일로 저장하기</b>
+        <div><button type="button" class="primary" id="download">PNG 파일로 내려받기</button></div>
+        <p class="note" id="download-note">누르면 <b>profile-card.png</b> 파일로 저장돼요. 확인 창이 뜨면 저장을 눌러 주세요.</p>
+      </li>
+      <li>
+        <b>파란 테두리 안의 카드 이미지를 직접 저장하기</b>
+        <p class="note">PC: 카드 이미지 위에서 <b>마우스 오른쪽 버튼</b> → <b>이미지를 다른 이름으로 저장</b><br>휴대폰: 카드 이미지를 <b>손가락으로 길게 누르기</b> → <b>이미지 저장</b> (사진 앱에 저장돼요)</p>
+      </li>
+      <li>
+        <b>복사해서 바로 붙여넣기</b>
+        <div><button type="button" class="ghost" id="copy-img">이미지 복사</button></div>
+        <p class="note">복사한 이미지는 파일로 저장되지 않아요. 카카오톡 대화창, PPT, 메일 쓰기 화면 등에서 <b>Ctrl+V</b>(맥은 <b>⌘+V</b>)를 누르면 붙여넣어져요.</p>
+        <p class="ok" id="copy-ok" hidden></p>
+      </li>
+    </ul>
+    <div class="row-btns" style="justify-content:flex-end"><button type="button" class="primary" id="sheet-close">닫기</button></div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const KEY = 'profile-card-draft-v1';
+const IMG_KEYS = ['photo2d', 'bust2d', 'bust3d', 'work1img', 'work2img', 'work3img', 'work4img'];
+
+// 빈 입력값 (다른 사람에게 공유해도 내 내용이 보이지 않도록)
+const SAMPLE = {};
+['name', 'intro', 'portfolio', 'designConcept'].concat([1, 2, 3, 4].flatMap((i) => ['work' + i + 'title', 'work' + i + 'desc'])).forEach((k) => (SAMPLE[k] = ''));
+
+const state = Object.assign({}, SAMPLE);
+IMG_KEYS.forEach((k) => (state[k] = ''));
+
+// ---------- 폼 구성 ----------
+function picker(key, label) {
+  return `<label class="pick" for="file-${key}">
+      <span class="thumb" id="thumb-${key}"></span>
+      <span class="txt"><b>${label}</b><small id="fname-${key}">사진 선택 (JPG · PNG)</small></span>
+      <input type="file" accept="image/*" id="file-${key}" data-key="${key}">
+      <button type="button" class="x" data-clear="${key}" aria-label="${label} 지우기" hidden>×</button>
+    </label>`;
+}
+$('#pick-photo2d').innerHTML = picker('photo2d', '2D 사진');
+$('#pick-bust2d').innerHTML = picker('bust2d', '2D 흉상');
+$('#pick-bust3d').innerHTML = picker('bust3d', '3D 흉상 (렌더 이미지)');
+$('#works').innerHTML = [1, 2, 3, 4].map((i) => `
+  <div class="work">
+    <div class="work-h">작품 ${i}</div>
+    ${picker('work' + i + 'img', '작품 ' + i + ' 이미지')}
+    <input type="text" id="work${i}title" name="work${i}title" placeholder="작품 제목" aria-label="작품 ${i} 제목">
+    <textarea id="work${i}desc" name="work${i}desc" placeholder="작품 ${i} 설명" aria-label="작품 ${i} 설명"></textarea>
+  </div>`).join('');
+
+const textFields = [...document.querySelectorAll('#f input[type=text], #f input[type=url], #f textarea')];
+
+// ---------- 이미지: 줄여서 data URL로 ----------
+async function fileToDataUrl(file) {
+  let bmp;
+  try { bmp = await createImageBitmap(file); }
+  catch (e) { throw new Error('이 사진 형식은 열 수 없어요. JPG나 PNG로 바꿔서 올려 주세요.'); }
+  const max = 1600;
+  const s = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(bmp.width * s); c.height = Math.round(bmp.height * s);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  return file.type === 'image/png' ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.88);
+}
+
+document.querySelectorAll('.pick input[type=file]').forEach((inp) => {
+  inp.addEventListener('change', async () => {
+    const file = inp.files[0]; if (!file) return;
+    const key = inp.dataset.key;
+    $('#fname-' + key).textContent = '불러오는 중...';
+    try {
+      state[key] = await fileToDataUrl(file);
+      $('#fname-' + key).textContent = file.name;
+    } catch (e) {
+      $('#fname-' + key).textContent = e.message;
+    }
+    inp.value = '';
+    syncPickers(); render(); save();
+  });
+});
+document.querySelectorAll('[data-clear]').forEach((b) => b.addEventListener('click', (e) => {
+  e.preventDefault();
+  state[b.dataset.clear] = ''; $('#fname-' + b.dataset.clear).textContent = '사진 선택 (JPG · PNG)';
+  syncPickers(); render(); save();
+}));
+function syncPickers() {
+  IMG_KEYS.forEach((k) => {
+    $('#thumb-' + k).style.backgroundImage = state[k] ? `url("${state[k]}")` : '';
+    document.querySelector(`[data-clear="${k}"]`).hidden = !state[k];
+    if (state[k] && $('#fname-' + k).textContent.startsWith('사진 선택')) $('#fname-' + k).textContent = '저장된 사진';
+  });
+}
+
+// ---------- 카드 그리기 ----------
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const val = (k) => (state[k] || '').trim();
+const txt = (k, cls, hint) => val(k) ? `<div class="${cls}">${esc(val(k))}</div>` : `<div class="${cls} hint" data-hint>${hint}</div>`;
+const img = (k, cls, label) => `<div class="img ${cls}${state[k] ? ' has' : ''}" style="${state[k] ? `background-image:url('${state[k]}')` : ''}">${label}</div>`;
+
+function render() {
+  const works = [1, 2, 3, 4].filter((i) => state['work' + i + 'img'] || val('work' + i + 'title') || val('work' + i + 'desc'));
+  $('#card').innerHTML = `
+    <div class="c-head">
+      ${img('photo2d', 'c-photo', '2D 사진')}
+      <div class="c-info">
+        ${txt('name', 'c-name', '이름')}
+        ${txt('intro', 'c-intro', '자기소개를 입력하세요')}
+      </div>
+    </div>
+    <div class="c-busts">
+      <div><div class="c-label">2D 흉상</div>${img('bust2d', 'c-bust', '2D 흉상')}</div>
+      <div><div class="c-label">3D 흉상</div>${img('bust3d', 'c-bust', '3D 흉상')}</div>
+    </div>
+    ${!works.length ? `<div data-hint><div class="c-label">WORKS</div><div class="c-works">${[1, 2, 3, 4].map((i) => `<div>${img('x', 'c-work-img', '작품 ' + i)}<div class="c-work-d hint">작품 제목과 설명</div></div>`).join('')}</div></div>` : ''}
+    ${works.length ? `<div><div class="c-label">WORKS</div><div class="c-works">${works.map((i) => `
+      <div>
+        ${img('work' + i + 'img', 'c-work-img', '작품 ' + i)}
+        ${val('work' + i + 'title') ? `<div class="c-work-t">${esc(val('work' + i + 'title'))}</div>` : ''}
+        ${val('work' + i + 'desc') ? `<div class="c-work-d">${esc(val('work' + i + 'desc'))}</div>` : ''}
+      </div>`).join('')}</div></div>` : ''}
+    ${val('designConcept') ? `<div><div class="c-label">디자인 컨셉</div><div class="c-text">${esc(val('designConcept'))}</div></div>` : ''}
+    ${val('portfolio') ? `<div><div class="c-label">PORTFOLIO</div><div class="c-link">${esc(val('portfolio'))}</div></div>` : ''}
+  `;
+  fit();
+}
+
+// 미리보기 칸 너비에 맞춰 축소
+function fit() {
+  const stage = $('#stage'), card = $('#card');
+  const s = Math.min(1, stage.clientWidth / 1200);
+  card.style.transform = `scale(${s})`;
+  stage.style.height = Math.ceil(card.offsetHeight * s) + 'px';
+}
+new ResizeObserver(fit).observe($('#stage'));
+
+// ---------- 자동 저장 ----------
+let saveTimer;
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(state));
+      $('#save-note').textContent = '입력한 내용은 이 브라우저에 자동 저장돼요.';
+    } catch (e) {
+      // 사진이 많아 저장 공간이 부족하면 글만 저장
+      try {
+        const textOnly = Object.assign({}, state); IMG_KEYS.forEach((k) => (textOnly[k] = ''));
+        localStorage.setItem(KEY, JSON.stringify(textOnly));
+        $('#save-note').textContent = '글은 저장됐지만 사진은 저장 공간이 부족해 저장되지 않았어요. 다시 열면 사진만 다시 올려 주세요.';
+      } catch (e2) {
+        $('#save-note').textContent = '이 브라우저에서는 자동 저장을 쓸 수 없어요.';
+      }
+    }
+  }, 400);
+}
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (d) Object.assign(state, d);
+  } catch (e) {}
+  textFields.forEach((el) => (el.value = state[el.name] || ''));
+}
+
+textFields.forEach((el) => el.addEventListener('input', () => { state[el.name] = el.value; render(); save(); }));
+
+// 지우기: 두 번 눌러야 지워짐
+let armTimer;
+$('#clear').addEventListener('click', () => {
+  const b = $('#clear');
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = '한 번 더 누르면 모두 지워져요';
+    armTimer = setTimeout(() => { b.classList.remove('armed'); b.textContent = '입력 지우기'; }, 3000);
+    return;
+  }
+  clearTimeout(armTimer); b.classList.remove('armed'); b.textContent = '입력 지우기';
+  Object.keys(state).forEach((k) => (state[k] = ''));
+  textFields.forEach((el) => (el.value = ''));
+  IMG_KEYS.forEach((k) => ($('#fname-' + k).textContent = '사진 선택 (JPG · PNG)'));
+  syncPickers(); render(); save();
+});
+
+// ---------- 이미지로 저장 ----------
+let lastBlob = null, lastUrl = '';
+// 웹페이지(claude.ai)에서는 downloads 기능으로, 내려받은 파일로 열면 일반 다운로드로 저장
+let downloadsApi = null;
+if (window.claude && claude.use) claude.use('downloads').then((d) => { downloadsApi = d; }).catch(() => {});
+$('#download').addEventListener('click', async () => {
+  const note = $('#download-note');
+  if (location.protocol !== 'file:' && !downloadsApi && window.claude && claude.use) {
+    try { downloadsApi = await claude.use('downloads'); } catch (e) {}
+  }
+  if (location.protocol === 'file:' || !downloadsApi) {
+    const a = document.createElement('a');
+    a.href = lastUrl; a.download = 'profile-card.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    note.textContent = '다운로드 폴더를 확인해 주세요 (profile-card.png). 파일이 없으면 위 카드 그림을 오른쪽 클릭해서 저장해 주세요.';
+    return;
+  }
+  try {
+    await downloadsApi.save({ filename: 'profile-card.png', data: lastBlob });
+    note.textContent = '저장됐어요. 다운로드 폴더(휴대폰은 파일 앱)를 확인해 주세요.';
+  } catch (e) {
+    note.textContent = e && e.code === 'declined'
+      ? '저장을 취소했어요. 다시 누르면 저장할 수 있어요.'
+      : '여기서는 파일 저장이 안 돼요. 아래 방법으로 이미지를 저장해 주세요.';
+  }
+});
+async function exportCard(btn) {
+  const label = btn.textContent;
+  btn.disabled = true; btn.textContent = '만드는 중...';
+  try {
+    await document.fonts.ready;
+    const holder = document.createElement('div');
+    holder.className = 'offscreen';
+    const clone = $('#card').cloneNode(true);
+    clone.removeAttribute('id'); clone.style.transform = 'none';
+    clone.querySelectorAll('[data-hint]').forEach((n) => n.remove());
+    holder.appendChild(clone); document.body.appendChild(holder);
+    const canvas = await html2canvas(clone, { scale: 2, backgroundColor: null, logging: false });
+    holder.remove();
+    lastBlob = await new Promise((r) => canvas.toBlob(r, 'image/png'));
+    const url = URL.createObjectURL(lastBlob);
+    $('#sheet-img').innerHTML = `<img src="${url}" alt="완성된 프로필 카드">`;
+    lastUrl = url;
+    $('#download-note').innerHTML = '누르면 <b>profile-card.png</b> 파일로 저장돼요. 확인 창이 뜨면 저장을 눌러 주세요.';
+    $('#copy-ok').hidden = true;
+    $('#sheet').hidden = false;
+  } catch (e) {
+    $('#save-note').textContent = '이미지를 만들지 못했어요: ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = label;
+  }
+}
+$('#export').addEventListener('click', (e) => exportCard(e.currentTarget));
+$('#export-m').addEventListener('click', (e) => exportCard(e.currentTarget));
+$('#sheet-close').addEventListener('click', () => ($('#sheet').hidden = true));
+$('#sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') $('#sheet').hidden = true; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#sheet').hidden = true; });
+$('#copy-img').addEventListener('click', async () => {
+  const ok = $('#copy-ok');
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': lastBlob })]);
+    ok.textContent = '복사됐어요. 이제 붙여넣을 곳(카카오톡, PPT 등)에서 Ctrl+V를 누르세요.';
+  } catch (e) {
+    ok.textContent = '이 브라우저에서는 복사가 안 돼요. 위 방법으로 이미지를 저장해 주세요.';
+  }
+  ok.hidden = false;
+});
+
+// ---------- Figma로 보내기 ----------
+// 플러그인이 읽는 필드 이름으로 변환 (이미지는 data URL 그대로)
+function figmaPayload() {
+  const p = {
+    name: val('name'), intro: val('intro'), portfolio: val('portfolio'), designConcept: val('designConcept'),
+    photo2d: state.photo2d, bust2d: state.bust2d, bust3d: state.bust3d,
+  };
+  [1, 2, 3, 4].forEach((i) => {
+    p['work' + i] = state['work' + i + 'img'];
+    p['work' + i + 'Title'] = val('work' + i + 'title');
+    p['work' + i + 'Desc'] = val('work' + i + 'desc');
+  });
+  return JSON.stringify({ type: 'profile-card', version: 1, profiles: [p] });
+}
+function figOk(t) { $('#fig-ok').textContent = t; $('#fig-ok').hidden = false; }
+$('#to-figma').addEventListener('click', () => { $('#fig-ok').hidden = true; $('#fsheet').hidden = false; });
+$('#fsheet-close').addEventListener('click', () => ($('#fsheet').hidden = true));
+$('#fsheet').addEventListener('click', (e) => { if (e.target.id === 'fsheet') $('#fsheet').hidden = true; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#fsheet').hidden = true; });
+$('#fig-copy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(figmaPayload());
+    figOk('복사됐어요. 이제 Figma 플러그인의 "웹페이지에서 가져오기" 칸에 Ctrl+V 하세요.');
+  } catch (e) {
+    figOk('이 브라우저에서는 복사가 안 돼요. "파일로 저장"을 눌러 주세요.');
+  }
+});
+$('#fig-file').addEventListener('click', async () => {
+  const data = new Blob([figmaPayload()], { type: 'application/json' });
+  const d = new Date(), z = (n) => String(n).padStart(2, '0');
+  const filename = `profile-card-${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}.json`;
+  if (location.protocol !== 'file:' && !downloadsApi && window.claude && claude.use) {
+    try { downloadsApi = await claude.use('downloads'); } catch (e) {}
+  }
+  if (location.protocol === 'file:' || !downloadsApi) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(data); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    figOk('다운로드 폴더에 ' + filename + ' 파일이 저장됐어요. 이 파일을 카드 받을 사람에게 보내거나, 플러그인에서 선택하세요.');
+    return;
+  }
+  try {
+    await downloadsApi.save({ filename, data });
+    figOk('저장됐어요 (' + filename + '). 이 파일을 카드 받을 사람에게 보내거나, 플러그인에서 선택하세요.');
+  } catch (e) {
+    figOk(e && e.code === 'declined' ? '저장을 취소했어요.' : '여기서는 파일 저장이 안 돼요. "Figma용으로 복사"를 써 주세요.');
+  }
+});
+
+load(); syncPickers(); render();
+document.fonts.ready.then(fit);
+</script>
