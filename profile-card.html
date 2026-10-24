@@ -117,7 +117,15 @@
   .ways b { font-weight: 600; }
   .ways .note b { color: var(--fg); }
   .ok { color: var(--accent); font-weight: 600; font-size: 13px; margin: 0; }
+  [hidden] { display: none !important; }
   .sheet[hidden] { display: none; }
+  .viewer-wrap { display: flex; justify-content: center; }
+  .viewer { position: relative; width: min(100%, calc((100vh - 300px) * 5 / 6)); aspect-ratio: 5 / 6; border-radius: 12px; overflow: hidden; background: #1e1e1e; }
+  .viewer canvas { display: block; width: 100% !important; height: 100% !important; touch-action: none; cursor: grab; }
+  .viewer .loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #d8d8d8; font-size: 14px; text-align: center; padding: 16px; }
+  .bg-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .bg-row button { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; padding: 0; }
+  .bg-row button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
   .offscreen { position: fixed; left: -100000px; top: 0; }
 
   .mobile-bar { display: none; }
@@ -155,7 +163,7 @@
       <legend>흉상</legend>
       <div id="pick-bust2d"></div>
       <div id="pick-bust3d"></div>
-      <p class="note">3D 흉상은 3D 파일이 아니라 렌더링하거나 캡처한 이미지(JPG·PNG)를 올려 주세요.</p>
+      <p class="note">3D 흉상은 <b>.glb</b> 모델 파일을 올리면 화면에 3D로 떠요. 돌려서 각도를 맞추고 캡처하면 그 장면이 카드에 들어가요.</p>
     </fieldset>
 
     <fieldset>
@@ -184,6 +192,26 @@
 </div>
 
 <div class="mobile-bar"><button type="button" class="primary" id="export-m">카드 이미지 만들기</button></div>
+
+<div class="sheet" id="vsheet" hidden>
+  <div class="sheet-box" role="dialog" aria-modal="true" aria-labelledby="vsheet-t">
+    <h2 id="vsheet-t">3D 흉상 각도 맞추기</h2>
+    <p class="note" style="margin:0">드래그해서 돌리고, 휠(휴대폰은 두 손가락)로 확대·축소, 오른쪽 버튼 드래그로 위치를 옮겨요. 보이는 그대로 카드에 들어가요.</p>
+    <div class="viewer-wrap"><div class="viewer" id="viewer"><div class="loading" id="viewer-msg">3D 모델 불러오는 중...</div></div></div>
+    <div class="bg-row" id="bg-row">
+      <span class="note">배경</span>
+      <button type="button" data-bg="#1e1e1e" style="background:#1e1e1e" aria-label="검정 배경" aria-pressed="true"></button>
+      <button type="button" data-bg="#8a8a8f" style="background:#8a8a8f" aria-label="회색 배경" aria-pressed="false"></button>
+      <button type="button" data-bg="#ebebf0" style="background:#ebebf0" aria-label="밝은 회색 배경" aria-pressed="false"></button>
+      <button type="button" data-bg="#ffffff" style="background:#ffffff" aria-label="흰 배경" aria-pressed="false"></button>
+      <button type="button" class="ghost" id="v-reset" style="width:auto;height:auto;border-radius:8px;padding:6px 12px">정면으로</button>
+    </div>
+    <div class="row-btns" style="justify-content:flex-end">
+      <button type="button" class="ghost" id="v-cancel">취소</button>
+      <button type="button" class="primary" id="v-capture" disabled>이 각도로 카드에 넣기</button>
+    </div>
+  </div>
+</div>
 
 <div class="sheet" id="fsheet" hidden>
   <div class="sheet-box" role="dialog" aria-modal="true" aria-labelledby="fsheet-t">
@@ -236,6 +264,83 @@
   </div>
 </div>
 
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+let renderer, scene, camera, controls, model, frameId, home;
+const draco = new DRACOLoader().setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/libs/draco/gltf/');
+const loader = new GLTFLoader().setDRACOLoader(draco).setMeshoptDecoder(MeshoptDecoder);
+
+function setup(host) {
+  if (renderer) { host.appendChild(renderer.domElement); return; }
+  renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color('#1e1e1e');
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; // PBR 재질용 조명
+  const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(2, 3, 4); scene.add(key);
+  camera = new THREE.PerspectiveCamera(30, 5 / 6, 0.01, 1000);
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  host.appendChild(renderer.domElement);
+}
+function resize() {
+  const host = renderer.domElement.parentElement; if (!host) return;
+  const w = host.clientWidth, h = host.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+function loop() { controls.update(); renderer.render(scene, camera); frameId = requestAnimationFrame(loop); }
+function frame() {
+  // 모델 크기에 맞춰 정면에서 보이도록 카메라 배치
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
+  const r = Math.max(size.x, size.y, size.z) / 2;
+  const dist = r / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.15;
+  camera.near = dist / 100; camera.far = dist * 100; camera.updateProjectionMatrix();
+  camera.position.set(center.x, center.y, center.z + dist);
+  controls.target.copy(center); controls.update();
+  home = { pos: camera.position.clone(), target: center.clone() };
+}
+
+window.bust3D = {
+  async open(file, host) {
+    setup(host); resize();
+    if (model) { scene.remove(model); model = null; }
+    const url = URL.createObjectURL(file);
+    try {
+      const gltf = await loader.loadAsync(url);
+      model = gltf.scene; scene.add(model); frame();
+    } finally { URL.revokeObjectURL(url); }
+    cancelAnimationFrame(frameId); loop();
+    window.addEventListener('resize', resize);
+  },
+  close() { cancelAnimationFrame(frameId); window.removeEventListener('resize', resize); },
+  reset() { if (!home) return; camera.position.copy(home.pos); controls.target.copy(home.target); controls.update(); },
+  setBackground(c) { if (scene) scene.background = new THREE.Color(c); },
+  capture(w, h) {
+    const prev = renderer.getSize(new THREE.Vector2()), pr = renderer.getPixelRatio();
+    renderer.setPixelRatio(1); renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.render(scene, camera);
+    const url = renderer.domElement.toDataURL('image/jpeg', 0.9);
+    renderer.setPixelRatio(pr); renderer.setSize(prev.x, prev.y, false); resize();
+    return url;
+  },
+};
+</script>
 <script>
 const $ = (s) => document.querySelector(s);
 const KEY = 'profile-card-draft-v1';
@@ -259,7 +364,10 @@ function picker(key, label) {
 }
 $('#pick-photo2d').innerHTML = picker('photo2d', '2D 사진');
 $('#pick-bust2d').innerHTML = picker('bust2d', '2D 흉상');
-$('#pick-bust3d').innerHTML = picker('bust3d', '3D 흉상 (렌더 이미지)');
+$('#pick-bust3d').innerHTML = picker('bust3d', '3D 흉상 (.glb 모델)')
+  .replace('accept="image/*"', 'accept=".glb,model/gltf-binary"')
+  .replace(' data-key="bust3d"', '')
+  .replace('사진 선택 (JPG · PNG)', '3D 모델 선택 (.glb)');
 $('#works').innerHTML = [1, 2, 3, 4].map((i) => `
   <div class="work">
     <div class="work-h">작품 ${i}</div>
@@ -300,14 +408,15 @@ document.querySelectorAll('.pick input[type=file][data-key]').forEach((inp) => {
 });
 document.querySelectorAll('[data-clear]').forEach((b) => b.addEventListener('click', (e) => {
   e.preventDefault();
-  state[b.dataset.clear] = ''; $('#fname-' + b.dataset.clear).textContent = '사진 선택 (JPG · PNG)';
+  state[b.dataset.clear] = ''; $('#fname-' + b.dataset.clear).textContent = b.dataset.clear === 'bust3d' ? '3D 모델 선택 (.glb)' : '사진 선택 (JPG · PNG)';
   syncPickers(); render(); save();
 }));
+const emptyLabel = (k) => (k === 'bust3d' ? '3D 모델 선택 (.glb)' : '사진 선택 (JPG · PNG)');
 function syncPickers() {
   IMG_KEYS.forEach((k) => {
     $('#thumb-' + k).style.backgroundImage = state[k] ? `url("${state[k]}")` : '';
     document.querySelector(`[data-clear="${k}"]`).hidden = !state[k];
-    if (state[k] && $('#fname-' + k).textContent.startsWith('사진 선택')) $('#fname-' + k).textContent = '저장된 사진';
+    if (state[k] && /^(사진 선택|3D 모델 선택)/.test($('#fname-' + k).textContent)) $('#fname-' + k).textContent = k === 'bust3d' ? '저장된 캡처' : '저장된 사진';
   });
 }
 
@@ -395,7 +504,7 @@ $('#clear').addEventListener('click', () => {
   clearTimeout(armTimer); b.classList.remove('armed'); b.textContent = '입력 지우기';
   Object.keys(state).forEach((k) => (state[k] = ''));
   textFields.forEach((el) => (el.value = ''));
-  IMG_KEYS.forEach((k) => ($('#fname-' + k).textContent = '사진 선택 (JPG · PNG)'));
+  IMG_KEYS.forEach((k) => ($('#fname-' + k).textContent = emptyLabel(k)));
   syncPickers(); render(); save();
 });
 
@@ -536,13 +645,52 @@ $('#import-file').addEventListener('change', async (e) => {
     });
     IMG_KEYS.forEach((k) => { if (!s(state[k]).startsWith('data:image/')) state[k] = ''; });
     textFields.forEach((el) => (el.value = state[el.name] || ''));
-    IMG_KEYS.forEach((k) => ($('#fname-' + k).textContent = state[k] ? '불러온 사진' : '사진 선택 (JPG · PNG)'));
+    IMG_KEYS.forEach((k) => ($('#fname-' + k).textContent = state[k] ? '불러온 사진' : emptyLabel(k)));
     syncPickers(); render(); save();
     note.textContent = (state.name || '이름 없음') + ' 카드를 불러왔어요.';
   } catch (err) {
     note.textContent = '이 파일은 읽을 수 없어요. 「파일로 저장 (.json)」으로 만든 파일을 골라 주세요.';
   }
   e.target.value = '';
+});
+
+// ---------- 3D 흉상: .glb를 띄워 각도 맞추고 캡처 ----------
+const BUST3D_EMPTY = '3D 모델 선택 (.glb)';
+let glbName = '';
+$('#file-bust3d').addEventListener('change', async () => {
+  const file = $('#file-bust3d').files[0]; $('#file-bust3d').value = '';
+  if (!file) return;
+  if (!/\.glb$/i.test(file.name)) { $('#fname-bust3d').textContent = '.glb 파일만 올릴 수 있어요'; return; }
+  glbName = file.name;
+  openViewer(file);
+});
+function openViewer(file) {
+  $('#vsheet').hidden = false;
+  $('#v-capture').disabled = true;
+  $('#viewer-msg').hidden = false;
+  $('#viewer-msg').textContent = '3D 모델 불러오는 중...';
+  const tryOpen = (n) => {
+    if (window.bust3D) return window.bust3D.open(file, $('#viewer'))
+      .then(() => { $('#viewer-msg').hidden = true; $('#v-capture').disabled = false; })
+      .catch((e) => { $('#viewer-msg').textContent = '이 파일을 열 수 없어요. .glb 파일이 맞는지 확인해 주세요.\n(' + (e && e.message ? e.message : e) + ')'; });
+    if (n > 100) { $('#viewer-msg').textContent = '3D 기능을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.'; return; }
+    setTimeout(() => tryOpen(n + 1), 100);
+  };
+  tryOpen(0);
+}
+function closeViewer() { $('#vsheet').hidden = true; if (window.bust3D) window.bust3D.close(); }
+$('#v-cancel').addEventListener('click', closeViewer);
+$('#v-reset').addEventListener('click', () => window.bust3D && window.bust3D.reset());
+document.querySelectorAll('#bg-row [data-bg]').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('#bg-row [data-bg]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  $('#viewer').style.background = b.dataset.bg;
+  window.bust3D && window.bust3D.setBackground(b.dataset.bg);
+}));
+$('#v-capture').addEventListener('click', () => {
+  // 카드의 흉상 칸(540×648)의 2배 크기로 캡처
+  state.bust3d = window.bust3D.capture(1080, 1296);
+  $('#fname-bust3d').textContent = glbName + ' (캡처됨)';
+  closeViewer(); syncPickers(); render(); save();
 });
 
 load(); syncPickers(); render();
