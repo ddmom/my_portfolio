@@ -175,6 +175,7 @@
       <legend>디자인 컨셉 · 포트폴리오</legend>
       <label>디자인 컨셉<textarea id="designConcept" name="designConcept"></textarea></label>
       <label>포트폴리오 주소<input type="url" id="portfolio" name="portfolio" placeholder="https://"></label>
+      <label>포트폴리오 설명<textarea id="portfolioDesc" name="portfolioDesc" placeholder="포트폴리오에 어떤 작업이 담겨 있는지 소개해 주세요"></textarea></label>
     </fieldset>
 
     <div class="row-btns">
@@ -348,7 +349,7 @@ const IMG_KEYS = ['photo2d', 'bust2d', 'bust3d', 'work1img', 'work2img', 'work3i
 
 // 빈 입력값 (다른 사람에게 공유해도 내 내용이 보이지 않도록)
 const SAMPLE = {};
-['name', 'intro', 'portfolio', 'designConcept'].concat([1, 2, 3, 4].flatMap((i) => ['work' + i + 'title', 'work' + i + 'desc'])).forEach((k) => (SAMPLE[k] = ''));
+['name', 'intro', 'portfolio', 'portfolioDesc', 'designConcept'].concat([1, 2, 3, 4].flatMap((i) => ['work' + i + 'title', 'work' + i + 'desc'])).forEach((k) => (SAMPLE[k] = ''));
 
 const state = Object.assign({}, SAMPLE);
 IMG_KEYS.forEach((k) => (state[k] = ''));
@@ -448,7 +449,7 @@ function render() {
         ${val('work' + i + 'desc') ? `<div class="c-work-d">${esc(val('work' + i + 'desc'))}</div>` : ''}
       </div>`).join('')}</div></div>` : ''}
     ${val('designConcept') ? `<div><div class="c-label">디자인 컨셉</div><div class="c-text">${esc(val('designConcept'))}</div></div>` : ''}
-    ${val('portfolio') ? `<div><div class="c-label">PORTFOLIO</div><div class="c-link">${esc(val('portfolio'))}</div></div>` : ''}
+    ${val('portfolio') || val('portfolioDesc') ? `<div><div class="c-label">PORTFOLIO</div>${val('portfolio') ? `<div class="c-link">${esc(val('portfolio'))}</div>` : ''}${val('portfolioDesc') ? `<div class="c-text"${val('portfolio') ? ' style="margin-top:10px"' : ''}>${esc(val('portfolioDesc'))}</div>` : ''}</div>` : ''}
   `;
   fit();
 }
@@ -580,7 +581,7 @@ $('#copy-img').addEventListener('click', async () => {
 // 플러그인이 읽는 필드 이름으로 변환 (이미지는 data URL 그대로)
 function figmaPayload() {
   const p = {
-    name: val('name'), intro: val('intro'), portfolio: val('portfolio'), designConcept: val('designConcept'),
+    name: val('name'), intro: val('intro'), portfolio: val('portfolio'), portfolioDesc: val('portfolioDesc'), designConcept: val('designConcept'),
     photo2d: state.photo2d, bust2d: state.bust2d, bust3d: state.bust3d,
   };
   [1, 2, 3, 4].forEach((i) => {
@@ -635,7 +636,7 @@ $('#import-file').addEventListener('change', async (e) => {
     if (!p) throw new Error('empty');
     const s = (v) => (typeof v === 'string' ? v : '');
     Object.assign(state, {
-      name: s(p.name), intro: s(p.intro), portfolio: s(p.portfolio), designConcept: s(p.designConcept),
+      name: s(p.name), intro: s(p.intro), portfolio: s(p.portfolio), portfolioDesc: s(p.portfolioDesc), designConcept: s(p.designConcept),
       photo2d: s(p.photo2d), bust2d: s(p.bust2d), bust3d: s(p.bust3d),
     });
     [1, 2, 3, 4].forEach((i) => {
