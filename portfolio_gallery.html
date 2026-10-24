@@ -83,6 +83,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 .lb-points b{width:26px;height:26px;border-radius:50%;background:#b8743a;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .lb-info .tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}.lb-info .tags span{font-size:11px;padding:3px 8px;border-radius:999px;background:rgba(233,201,166,.18);color:#e9c9a6}
 .lb-desc{font-size:13px;line-height:1.7;color:#cfc3b6;margin:0}
+.lb-dl{display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding:11px 18px;border-radius:12px;border:1px solid #e9c9a6;background:transparent;color:#f3e8dc;font-weight:600;font-size:14px}.lb-dl:hover{background:rgba(233,201,166,.15)}
 @media (max-width:860px){#lightbox{justify-content:flex-start;overflow:auto}.lb-body{flex-direction:column;align-items:stretch}.lb-info{width:auto}#lbImg{max-height:50vh}}
 #lbThumbs{display:flex;gap:8px;margin-top:14px}
 #lbThumbs img{width:54px;height:54px;object-fit:cover;border-radius:8px;opacity:.5;cursor:pointer;border:2px solid transparent}
@@ -145,7 +146,7 @@ if(/[?&]from=hall/.test(location.search)){ document.getElementById('fade').class
   <button id="lbClose">닫기 ✕</button>
   <div class="lb-body">
     <div class="lb-view"><img id="lbImg" alt="" /><div id="lbThumbs"></div></div>
-    <aside class="lb-info"><div class="no" id="lbNo"></div><h2 id="lbTitle"></h2><p class="lb-lead" id="lbLead"></p><ol class="lb-points" id="lbPoints"></ol><div class="tags" id="lbTags"></div><p class="lb-desc" id="lbDesc"></p></aside>
+    <aside class="lb-info"><div class="no" id="lbNo"></div><h2 id="lbTitle"></h2><p class="lb-lead" id="lbLead"></p><ol class="lb-points" id="lbPoints"></ol><div class="tags" id="lbTags"></div><p class="lb-desc" id="lbDesc"></p><button type="button" class="lb-dl" id="lbDl"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width:2.6"><path d="M12 4v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg><span>이미지 내려받기 (PNG)</span></button></aside>
   </div>
 </div>
 
@@ -457,6 +458,15 @@ function openLightbox(i){
 }
 function closeLightbox(){ $('lightbox').classList.remove('show'); lbIndex = -1; }
 $('lbClose').onclick = closeLightbox;
+// 지금 크게 보고 있는 이미지를 PNG로 내려받기
+function dlPNG(src,name,btn){var lab=btn&&btn.querySelector('span'),old=lab&&lab.textContent;if(lab)lab.textContent='준비 중…';
+ function fin(){if(lab)lab.textContent=old;}
+ function save(href,ext){var a=document.createElement('a');a.href=href;a.download=name+ext;document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},1000);}
+ // 이미지를 PNG로 바꿔 저장 (같은 사이트에서만 가능, 안 되면 원본 파일을 그대로 받음)
+ fetch(src).then(function(r){if(!r.ok)throw 0;return r.blob();}).then(function(b){return createImageBitmap(b);}).then(function(bm){var c=document.createElement('canvas');c.width=bm.width;c.height=bm.height;c.getContext('2d').drawImage(bm,0,0);
+  c.toBlob(function(png){var u=URL.createObjectURL(png);save(u,'.png');setTimeout(function(){URL.revokeObjectURL(u);},4000);fin();},'image/png');})
+ .catch(function(){save(src,'.'+(src.split('?')[0].split('.').pop()||'jpg'));fin();});}
+$('lbDl').onclick = function(){ if(lbIndex<0) return; const w = WORKS[lbIndex]; dlPNG($('lbImg').getAttribute('src'), 'ChoMinyoung_'+$('lbImg').getAttribute('src').split('/').pop().replace(/\.\w+$/,''), this); };
 $('lightbox').addEventListener('click', e=>{ if(e.target.id==='lightbox' || e.target.classList.contains('lb-body')) closeLightbox(); });
 $('cZoom').onclick = ()=>{ if(state.index>=0) openLightbox(state.index); };
 
