@@ -51,7 +51,7 @@
   fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; min-width: 0; }
   legend { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--accent); padding: 0; margin-bottom: 4px; }
   label { display: grid; gap: 4px; font-weight: 500; font-size: 13px; }
-  input[type=text], input[type=url], textarea {
+  input[type=text], input[type=url], input[type=email], textarea {
     width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
     background: var(--field); color: var(--fg); font: inherit; font-weight: 400;
   }
@@ -100,6 +100,9 @@
   .c-work-t { font-size: 16px; font-weight: 700; margin-top: 12px; }
   .c-work-d { font-size: 15px; line-height: 1.5; color: var(--card-sub); margin-top: 6px; white-space: pre-wrap; }
   .c-text { font-size: 18px; line-height: 1.6; white-space: pre-wrap; }
+  .c-email { font-size: 17px; color: var(--card-accent); word-break: break-all; }
+  .c-skills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .c-chip { font-size: 15px; line-height: 1; padding: 9px 14px; border-radius: 999px; background: #e8f5fe; color: #0f6fae; font-weight: 700; }
   .c-link { font-size: 18px; color: var(--card-accent); text-decoration: underline; word-break: break-all; }
   .img { background: var(--card-ph) center / cover no-repeat; display: flex; align-items: center; justify-content: center; color: var(--card-sub); font-size: 14px; }
   .img.has { color: transparent; }
@@ -156,6 +159,7 @@
       <legend>나에 대해</legend>
       <label>이름<input type="text" id="name" name="name" placeholder="홍길동"></label>
       <label>자기소개<textarea id="intro" name="intro" placeholder="어떤 디자이너인지 2~3문장으로 소개해 주세요"></textarea></label>
+      <label>연락처 이메일<input type="email" id="email" name="email" placeholder="name@example.com"></label>
       <div id="pick-photo2d"></div>
     </fieldset>
 
@@ -169,6 +173,13 @@
     <fieldset>
       <legend>작품 (최대 4개)</legend>
       <div id="works" style="display:grid;gap:10px"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>전문분야 &amp; 스킬</legend>
+      <label>전문분야<input type="text" id="specialty" name="specialty" placeholder="예: 시니어 UX/UI, 패키지 디자인"></label>
+      <label>스킬<input type="text" id="skills" name="skills" placeholder="예: Figma, Blender, Photoshop"></label>
+      <p class="note">스킬은 쉼표(,)로 나눠 쓰면 카드에 태그로 하나씩 보여요.</p>
     </fieldset>
 
     <fieldset>
@@ -349,7 +360,7 @@ const IMG_KEYS = ['photo2d', 'bust2d', 'bust3d', 'work1img', 'work2img', 'work3i
 
 // 빈 입력값 (다른 사람에게 공유해도 내 내용이 보이지 않도록)
 const SAMPLE = {};
-['name', 'intro', 'portfolio', 'portfolioDesc', 'designConcept'].concat([1, 2, 3, 4].flatMap((i) => ['work' + i + 'title', 'work' + i + 'desc'])).forEach((k) => (SAMPLE[k] = ''));
+['name', 'intro', 'email', 'specialty', 'skills', 'portfolio', 'portfolioDesc', 'designConcept'].concat([1, 2, 3, 4].flatMap((i) => ['work' + i + 'title', 'work' + i + 'desc'])).forEach((k) => (SAMPLE[k] = ''));
 
 const state = Object.assign({}, SAMPLE);
 IMG_KEYS.forEach((k) => (state[k] = ''));
@@ -377,7 +388,7 @@ $('#works').innerHTML = [1, 2, 3, 4].map((i) => `
     <textarea id="work${i}desc" name="work${i}desc" placeholder="작품 ${i} 설명" aria-label="작품 ${i} 설명"></textarea>
   </div>`).join('');
 
-const textFields = [...document.querySelectorAll('#f input[type=text], #f input[type=url], #f textarea')];
+const textFields = [...document.querySelectorAll('#f input[type=text], #f input[type=url], #f input[type=email], #f textarea')];
 
 // ---------- 이미지: 줄여서 data URL로 ----------
 async function fileToDataUrl(file) {
@@ -427,6 +438,14 @@ const val = (k) => (state[k] || '').trim();
 const txt = (k, cls, hint) => val(k) ? `<div class="${cls}">${esc(val(k))}</div>` : `<div class="${cls} hint" data-hint>${hint}</div>`;
 const img = (k, cls, label) => `<div class="img ${cls}${state[k] ? ' has' : ''}" style="${state[k] ? `background-image:url('${state[k]}')` : ''}">${label}</div>`;
 
+const skillList = () => val('skills').split(/[,，、\n]/).map((x) => x.trim()).filter(Boolean);
+function skillsHtml() {
+  const sk = skillList();
+  if (!val('specialty') && !sk.length) return '';
+  return `<div><div class="c-label">전문분야 &amp; 스킬</div>
+    ${val('specialty') ? `<div class="c-text">${esc(val('specialty'))}</div>` : ''}
+    ${sk.length ? `<div class="c-skills">${sk.map((x) => `<span class="c-chip">${esc(x)}</span>`).join('')}</div>` : ''}</div>`;
+}
 function render() {
   const works = [1, 2, 3, 4].filter((i) => state['work' + i + 'img'] || val('work' + i + 'title') || val('work' + i + 'desc'));
   $('#card').innerHTML = `
@@ -435,6 +454,7 @@ function render() {
       <div class="c-info">
         ${txt('name', 'c-name', '이름')}
         ${txt('intro', 'c-intro', '자기소개를 입력하세요')}
+        ${txt('email', 'c-email', '연락처 이메일')}
       </div>
     </div>
     <div class="c-busts">
@@ -448,6 +468,7 @@ function render() {
         ${val('work' + i + 'title') ? `<div class="c-work-t">${esc(val('work' + i + 'title'))}</div>` : ''}
         ${val('work' + i + 'desc') ? `<div class="c-work-d">${esc(val('work' + i + 'desc'))}</div>` : ''}
       </div>`).join('')}</div></div>` : ''}
+    ${skillsHtml()}
     ${val('designConcept') ? `<div><div class="c-label">디자인 컨셉</div><div class="c-text">${esc(val('designConcept'))}</div></div>` : ''}
     ${val('portfolio') || val('portfolioDesc') ? `<div><div class="c-label">PORTFOLIO</div>${val('portfolio') ? `<div class="c-link">${esc(val('portfolio'))}</div>` : ''}${val('portfolioDesc') ? `<div class="c-text"${val('portfolio') ? ' style="margin-top:10px"' : ''}>${esc(val('portfolioDesc'))}</div>` : ''}</div>` : ''}
   `;
@@ -581,7 +602,7 @@ $('#copy-img').addEventListener('click', async () => {
 // 플러그인이 읽는 필드 이름으로 변환 (이미지는 data URL 그대로)
 function figmaPayload() {
   const p = {
-    name: val('name'), intro: val('intro'), portfolio: val('portfolio'), portfolioDesc: val('portfolioDesc'), designConcept: val('designConcept'),
+    name: val('name'), intro: val('intro'), email: val('email'), specialty: val('specialty'), skills: val('skills'), portfolio: val('portfolio'), portfolioDesc: val('portfolioDesc'), designConcept: val('designConcept'),
     photo2d: state.photo2d, bust2d: state.bust2d, bust3d: state.bust3d,
   };
   [1, 2, 3, 4].forEach((i) => {
@@ -636,7 +657,7 @@ $('#import-file').addEventListener('change', async (e) => {
     if (!p) throw new Error('empty');
     const s = (v) => (typeof v === 'string' ? v : '');
     Object.assign(state, {
-      name: s(p.name), intro: s(p.intro), portfolio: s(p.portfolio), portfolioDesc: s(p.portfolioDesc), designConcept: s(p.designConcept),
+      name: s(p.name), intro: s(p.intro), email: s(p.email), specialty: s(p.specialty), skills: s(p.skills), portfolio: s(p.portfolio), portfolioDesc: s(p.portfolioDesc), designConcept: s(p.designConcept),
       photo2d: s(p.photo2d), bust2d: s(p.bust2d), bust3d: s(p.bust3d),
     });
     [1, 2, 3, 4].forEach((i) => {
