@@ -98,6 +98,7 @@
   .c-works { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
   .c-work-img { aspect-ratio: 1; border-radius: 16px; }
   .c-work-t { font-size: 16px; font-weight: 700; margin-top: 12px; }
+  .c-work-link { font-size: 13px; color: var(--card-accent); text-decoration: underline; margin-top: 6px; word-break: break-all; }
   .c-work-d { font-size: 15px; line-height: 1.5; color: var(--card-sub); margin-top: 6px; white-space: pre-wrap; }
   .c-text { font-size: 18px; line-height: 1.6; white-space: pre-wrap; }
   .c-email { font-size: 17px; color: var(--card-accent); word-break: break-all; }
@@ -360,7 +361,7 @@ const IMG_KEYS = ['photo2d', 'bust2d', 'bust3d', 'work1img', 'work2img', 'work3i
 
 // 빈 입력값 (다른 사람에게 공유해도 내 내용이 보이지 않도록)
 const SAMPLE = {};
-['name', 'intro', 'email', 'specialty', 'skills', 'portfolio', 'portfolioDesc', 'designConcept'].concat([1, 2, 3, 4].flatMap((i) => ['work' + i + 'title', 'work' + i + 'desc'])).forEach((k) => (SAMPLE[k] = ''));
+['name', 'intro', 'email', 'specialty', 'skills', 'portfolio', 'portfolioDesc', 'designConcept'].concat([1, 2, 3, 4].flatMap((i) => ['work' + i + 'title', 'work' + i + 'desc', 'work' + i + 'link'])).forEach((k) => (SAMPLE[k] = ''));
 
 const state = Object.assign({}, SAMPLE);
 IMG_KEYS.forEach((k) => (state[k] = ''));
@@ -386,6 +387,7 @@ $('#works').innerHTML = [1, 2, 3, 4].map((i) => `
     ${picker('work' + i + 'img', '작품 ' + i + ' 이미지')}
     <input type="text" id="work${i}title" name="work${i}title" placeholder="작품 제목" aria-label="작품 ${i} 제목">
     <textarea id="work${i}desc" name="work${i}desc" placeholder="작품 ${i} 설명" aria-label="작품 ${i} 설명"></textarea>
+    <input type="url" id="work${i}link" name="work${i}link" placeholder="작품 ${i} 주소 (https://…)" aria-label="작품 ${i} 주소">
   </div>`).join('');
 
 const textFields = [...document.querySelectorAll('#f input[type=text], #f input[type=url], #f input[type=email], #f textarea')];
@@ -447,7 +449,7 @@ function skillsHtml() {
     ${sk.length ? `<div class="c-skills">${sk.map((x) => `<span class="c-chip">${esc(x)}</span>`).join('')}</div>` : ''}</div>`;
 }
 function render() {
-  const works = [1, 2, 3, 4].filter((i) => state['work' + i + 'img'] || val('work' + i + 'title') || val('work' + i + 'desc'));
+  const works = [1, 2, 3, 4].filter((i) => state['work' + i + 'img'] || val('work' + i + 'title') || val('work' + i + 'desc') || val('work' + i + 'link'));
   $('#card').innerHTML = `
     <div class="c-head">
       ${img('photo2d', 'c-photo', '2D 사진')}
@@ -467,6 +469,7 @@ function render() {
         ${img('work' + i + 'img', 'c-work-img', '작품 ' + i)}
         ${val('work' + i + 'title') ? `<div class="c-work-t">${esc(val('work' + i + 'title'))}</div>` : ''}
         ${val('work' + i + 'desc') ? `<div class="c-work-d">${esc(val('work' + i + 'desc'))}</div>` : ''}
+        ${val('work' + i + 'link') ? `<div class="c-work-link">${esc(val('work' + i + 'link'))}</div>` : ''}
       </div>`).join('')}</div></div>` : ''}
     ${skillsHtml()}
     ${val('designConcept') ? `<div><div class="c-label">디자인 컨셉</div><div class="c-text">${esc(val('designConcept'))}</div></div>` : ''}
@@ -609,6 +612,7 @@ function figmaPayload() {
     p['work' + i] = state['work' + i + 'img'];
     p['work' + i + 'Title'] = val('work' + i + 'title');
     p['work' + i + 'Desc'] = val('work' + i + 'desc');
+    p['work' + i + 'Link'] = val('work' + i + 'link');
   });
   return JSON.stringify({ type: 'profile-card', version: 1, profiles: [p] });
 }
@@ -664,6 +668,7 @@ $('#import-file').addEventListener('change', async (e) => {
       state['work' + i + 'img'] = s(p['work' + i]).startsWith('data:image/') ? p['work' + i] : '';
       state['work' + i + 'title'] = s(p['work' + i + 'Title']);
       state['work' + i + 'desc'] = s(p['work' + i + 'Desc']);
+      state['work' + i + 'link'] = s(p['work' + i + 'Link']);
     });
     IMG_KEYS.forEach((k) => { if (!s(state[k]).startsWith('data:image/')) state[k] = ''; });
     textFields.forEach((el) => (el.value = state[el.name] || ''));
